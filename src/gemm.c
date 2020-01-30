@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <pthread.h>
 
 void gemm_bin(int M, int N, int K, float ALPHA, 
         char  *A, int lda, 
@@ -71,18 +72,74 @@ void gemm(int TA, int TB, int M, int N, int K, float ALPHA,
     gemm_cpu( TA,  TB,  M, N, K, ALPHA,A,lda, B, ldb,BETA,C,ldc);
 }
 
+struct {
+    int M;
+    int N;
+    int K;
+    float ALPHA;
+    float* A;
+    int lda;
+    float* B;
+    int ldb;
+    float* C;
+    int ldc;
+    int startindex;
+}typedef gemmUnit;
+
 void gemm_nn(int M, int N, int K, float ALPHA, 
         float *A, int lda, 
         float *B, int ldb,
         float *C, int ldc)
 {
-    int i,j,k;
+    gemmUnit gm1;
+    gemmUnit gm2;
+
+
+    gm1.M = M/2;
+    gm2.M = M;
+    gm1.N = N;
+    gm2.N = N;
+    gm1.K = K;
+    gm2.K = K;
+    gm1.ALPHA = ALPHA;
+    gm2.ALPHA = ALPHA;
+    gm1.A = A;
+    gm2.A = A;
+    gm1.lda = lda;
+    gm2.lda = lda;
+    gm1.B = B;
+    gm2.B = B;
+    gm1.ldb = ldb;
+    gm2.ldb = ldb;
+    gm1.C = C;
+    gm2.C = C;
+    gm1.ldc = ldc;
+    gm2.ldc = ldc;
+    gm1.startindex = 0;
+    gm2.startindex = M / 2;
+    
+    pthread_t t1, t2;
+
+    t1 = pthread_create(&t1, NULL, gemm_nn_pthread, &gm1);
+    t2 = pthread_create(&t2, NULL, gemm_nn_pthread, &gm2);
+
+    pthread_join(t1, NULL);
+    pthread_join(t2, NULL);
+}
+
+
+
+void* gemm_nn_pthread(void* gemm) {
+    gemmUnit* unit = (gemmUnit*)gemm;
+
+
+    int i, j, k;
     #pragma omp parallel for
-    for(i = 0; i < M; ++i){
-        for(k = 0; k < K; ++k){
-            register float A_PART = ALPHA*A[i*lda+k];
-            for(j = 0; j < N; ++j){
-                C[i*ldc+j] += A_PART*B[k*ldb+j];
+    for (i = unit->startIndex; i < unit->M; ++i) {
+        for (k = 0; k < unit->K; ++k) {
+            register float A_PART = unit->ALPHA * unit->A[i * unit->lda + k];
+            for (j = 0; j < unit->N; ++j) {
+                unit->C[i * unit->ldc + j] += A_PART * unit->B[k * unit->ldb + j];
             }
         }
     }
