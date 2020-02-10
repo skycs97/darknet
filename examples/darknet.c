@@ -1,4 +1,5 @@
 #include "darknet.h"
+#include "thpool.h"
 
 #include <time.h>
 #include <stdlib.h>
@@ -397,6 +398,13 @@ void visualize(char *cfgfile, char *weightfile)
     visualize_network(net);
 }
 
+void choiceNetwork() 
+{
+    
+}
+
+threadpool threadpool;
+
 int main(int argc, char **argv)
 {
     //test_resize("data/bad.jpg");
@@ -418,6 +426,8 @@ int main(int argc, char **argv)
         cuda_set_device(gpu_index);
     }
 #endif
+
+    threadpool = thpool_init(8);
 
     if (0 == strcmp(argv[1], "average")){
         average(argc, argv);

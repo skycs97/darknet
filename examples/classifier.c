@@ -606,6 +606,7 @@ void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *fi
         }
         if(r.data != im.data) free_image(r);
         free_image(im);
+        free_network()
         if (filename) break;
     }
 }

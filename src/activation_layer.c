@@ -9,7 +9,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-/*activation_layer 만드는 부분*/
 layer make_activation_layer(int batch, int inputs, ACTIVATION activation)
 {
     layer l = {0};

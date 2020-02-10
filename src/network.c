@@ -201,13 +201,14 @@ void forward_network(network *netp)
         if(l.delta){
             fill_cpu(l.outputs * l.batch, 0, l.delta, 1);
         }
+        //쓰레드 추가해줄 부분
         l.forward(l, net);
         net.input = l.output;
         if(l.truth) {
             net.truth = l.output;
         }
     }
-    calc_network_cost(netp);
+    //calc_network_cost(netp);
 }
 
 void update_network(network *netp)

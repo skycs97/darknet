@@ -505,6 +505,8 @@ typedef struct network{
     float *output_gpu;
 #endif
 
+    pthread_mutex_t network_lock;
+
 } network;
 
 typedef struct {

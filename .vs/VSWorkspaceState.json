@@ -4,8 +4,9 @@
     "\\examples",
     "\\include",
     "\\python",
+    "\\scripts",
     "\\src"
   ],
-  "SelectedNode": "\\src\\im2col.c",
+  "SelectedNode": "\\examples\\classifier.c",
   "PreviewInSolutionExplorer": false
 }
