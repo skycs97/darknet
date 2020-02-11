@@ -22,6 +22,7 @@ extern void run_go(int argc, char **argv);
 extern void run_art(int argc, char **argv);
 extern void run_super(int argc, char **argv);
 extern void run_lsd(int argc, char **argv);
+extern void predict_classifier2(test * input);
 
 void average(int argc, char *argv[])
 {
@@ -403,13 +404,14 @@ void choiceNetwork()
     
 }
 
-threadpool threadpool;
+threadpool thpool;
 
-int main(int argc, char **argv)
+int main()
 {
     //test_resize("data/bad.jpg");
     //test_box();
     //test_convolutional_layer();
+    /*
     if(argc < 2){
         fprintf(stderr, "usage: %s <function>\n", argv[0]);
         return 0;
@@ -417,7 +419,7 @@ int main(int argc, char **argv)
     gpu_index = find_int_arg(argc, argv, "-i", 0);
     if(find_arg(argc, argv, "-nogpu")) {
         gpu_index = -1;
-    }
+    }*/
 
 #ifndef GPU
     gpu_index = -1;
@@ -427,8 +429,104 @@ int main(int argc, char **argv)
     }
 #endif
 
-    threadpool = thpool_init(8);
+    //thpool = thpool_init(4);
 
+    //char** vgg = {"darknet", "classfier", "predict", "cfg/imagenet1k.data", "cfg/","", "data/eagle.jpg"};
+    char** densenet = {"darknet", "classfier", "predict", "cfg/imagenet1k.data", "cfg/", "", "data/eagle.jpg"};
+    char** resnet = {"darknet", "classfier", "predict", "cfg/imagenet1k.data", "cfg/", "", "data/eagle.jpg"};
+
+    char * vggName = "VGG";
+    char * denseName = "Dense";
+    char * resName = "Res";
+
+    //network * vggNetwork = load_network("cfg/vgg-16.cfg", "vgg-16.weights", 0);
+    network * denseNetwork = load_network("cfg/densenet201.cfg", "densenet201.weights",0);
+    network * resNetwork = load_network("cfg/resnet152.cfg", "resnet152.weights",0);
+    
+    list *options = read_data_cfg("cfg/imagenet1k.data");
+    char *name_list = option_find_str(options, "names", 0);
+    if(!name_list) name_list = option_find_str(options, "labels", "data/labels.list");
+    int top = option_find_int(options, "top", 1);
+
+    int i = 0;
+    char **names = get_labels(name_list);
+
+    int argc = 0;
+
+    int vggCount = 0;
+    int denseCount = 0;
+    int resCount = 0;
+
+    // fprintf(stderr, "vgg - ");
+    // scanf("%d", vggCount);
+    // getchar();
+
+    fprintf(stderr, "denseNet - ");
+    fflush(stdout);
+    scanf("%d", &denseCount);
+    getchar();
+
+    fprintf(stderr, "resnet - ");
+    fflush(stdout);
+    scanf("%d", &resCount);
+    getchar();
+   
+    char buff[256];
+    char *input = buff;
+
+    while(1){
+        printf("Enter Image Path: ");
+        fflush(stdout);
+        input = fgets(input, 256, stdin);
+        if(!input) continue;
+        strtok(input, "\n");
+        break;
+    }
+    
+    image im = load_image_color(buff, 0, 0);
+
+    int allCount = vggCount + denseCount + resCount;
+    double time = what_time_is_it_now();
+    pthread_t * networkArray = (pthread_t*)malloc(allCount * sizeof(pthread_t));
+
+    int count = 0;
+
+    // for(int i=0; i<vggCount; ++i){
+    //     test * input = (test*)malloc(sizeof(test));
+    //     input->net = *vggNetwork;
+    //     input->im = im;
+    //     input->names = names;
+    //     input->netName = vggName;
+
+    //     pthread_create(&networkArray[count], NULL,predict_classifier2, input);
+    //     ++count;
+    // }
+    for(int i=0; i<denseCount; ++i){
+        test * input = (test*)malloc(sizeof(test));
+        input->net = copy_network(densenet);
+        input->im = im;
+        input->names = names;
+        input->netName = denseName;
+        pthread_create(&networkArray[count], NULL,predict_classifier2, input);
+        ++count;
+    }
+    for(int i=0; i<resCount; ++i){
+        test * input = (test*)malloc(sizeof(test));
+        input->net = copy_network(resNetwork);
+        input->im = im;
+        input->names = names;
+        input->netName = resName;
+        pthread_create(&networkArray[count], NULL,predict_classifier2, input);
+        ++count;
+    }    
+
+    for(int i=0; i<allCount; ++i){
+        pthread_join(networkArray[i], NULL);
+    } 
+    
+    fprintf(stderr, "execution Time : %lf", what_time_is_it_now() - time);
+    return 0;
+/*
     if (0 == strcmp(argv[1], "average")){
         average(argc, argv);
     } else if (0 == strcmp(argv[1], "yolo")){
@@ -507,7 +605,6 @@ int main(int argc, char **argv)
         test_resize(argv[2]);
     } else {
         fprintf(stderr, "Not an option: %s\n", argv[1]);
-    }
-    return 0;
+    }*/
 }
 

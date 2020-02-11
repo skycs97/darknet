@@ -57,7 +57,25 @@ network *load_network(char *cfg, char *weights, int clear)
         load_weights(net, weights);
     }
     if(clear) (*net->seen) = 0;
+    pthread_cond_init(&(net->network_cond), NULL);
     return net;
+}
+network* copy_network(network* source){
+    network* des = (network*)malloc(sizeof(network));
+    *des = *source;
+
+    des->seen = calloc(1, sizeof(size_t));
+    des->t    = calloc(1, sizeof(int));
+    des->cost = calloc(1, sizeof(float));
+    
+    des->input = calloc(source->inputs*source->batch, sizeof(float));
+    des->truth = calloc(source->truths*source->batch, sizeof(float));
+    des->workspace = calloc(1, source->workspace_size);
+    des->scales = calloc(source->num_steps, sizeof(float));
+    des->steps = calloc(source->num_steps, sizeof(int));
+    
+
+    return des;
 }
 
 size_t get_current_batch(network *net)
@@ -201,7 +219,7 @@ void forward_network(network *netp)
         if(l.delta){
             fill_cpu(l.outputs * l.batch, 0, l.delta, 1);
         }
-        //¾²·¹µå Ãß°¡ÇØÁÙ ºÎºÐ
+        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Îºï¿½
         l.forward(l, net);
         net.input = l.output;
         if(l.truth) {

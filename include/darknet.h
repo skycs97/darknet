@@ -16,14 +16,14 @@
     #include "cudnn.h"
     #endif
 #endif
-//c++ ÄÄÆÄÀÏ·¯ ÀÌ¿ë½Ã ³×ÀÓ¸Í±Û¸µÀ» ¸·°í c¾ð¾î ½ºÅ¸ÀÏ·Î °Ë»öÇÏ±â À§ÇÔ
+//c++ ï¿½ï¿½ï¿½ï¿½ï¿½Ï·ï¿½ ï¿½Ì¿ï¿½ï¿½ ï¿½ï¿½ï¿½Ó¸Í±Û¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ cï¿½ï¿½ï¿½ ï¿½ï¿½Å¸ï¿½Ï·ï¿½ ï¿½Ë»ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define SECRET_NUM -1234
 extern int gpu_index;
-/*¸ÞÅ¸µ¥ÀÌÅÍ*/
+/*ï¿½ï¿½Å¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
 typedef struct{
     int classes;
     char **names;
@@ -46,14 +46,14 @@ typedef struct{
 tree *read_tree(char *filename);
 
 /*
-È°¼ºÇÔ¼ö ¸ñ·Ï
+È°ï¿½ï¿½ï¿½Ô¼ï¿½ ï¿½ï¿½ï¿½
 */
 typedef enum{
     LOGISTIC, RELU, RELIE, LINEAR, RAMP, TANH, PLSE, LEAKY, ELU, LOGGY, STAIR, HARDTAN, LHTAN, SELU
 } ACTIVATION;
 
 /*
-ÀÌ¹ÌÁöÅ¸ÀÔ ¸ñ·Ï
+ï¿½Ì¹ï¿½ï¿½ï¿½Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½
 */
 typedef enum{
     PNG, BMP, TGA, JPG
@@ -64,7 +64,7 @@ typedef enum{
     MULT, ADD, SUB, DIV
 } BINARY_ACTIVATION;
 
-//·¹ÀÌ¾î Å¸ÀÔ
+//ï¿½ï¿½ï¿½Ì¾ï¿½ Å¸ï¿½ï¿½
 typedef enum {
     CONVOLUTIONAL,
     DECONVOLUTIONAL,
@@ -144,7 +144,7 @@ struct layer{
     int nbiases;
     int extra;
     int truths;
-	//pool¿¡ »ç¿ëµÇ´Âµí
+	//poolï¿½ï¿½ ï¿½ï¿½ï¿½Ç´Âµï¿½
     int h,w,c;
     int out_h, out_w, out_c;
     int n;
@@ -497,6 +497,7 @@ typedef struct network{
     int index;
     float *cost;
     float clip;
+    size_t workspace_size;
 
 #ifdef GPU
     float *input_gpu;
@@ -505,8 +506,7 @@ typedef struct network{
     float *output_gpu;
 #endif
 
-    pthread_mutex_t network_lock;
-
+    pthread_cond_t network_cond;
 } network;
 
 typedef struct {
@@ -812,6 +812,14 @@ int *read_intlist(char *s, int *n, int d);
 size_t rand_size_t();
 float rand_normal();
 float rand_uniform(float min, float max);
+network* copy_network(network*);
+
+struct {
+    network *net;
+    image im;
+    char **names;
+    char *netName;
+}typedef test;
 
 #ifdef __cplusplus
 }

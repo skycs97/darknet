@@ -183,7 +183,7 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
     l.h = h;
     l.w = w;
     l.c = c;
-    l.n = n;`
+    l.n = n;
     l.binary = binary;
     l.xnor = xnor;
     l.batch = batch;

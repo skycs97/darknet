@@ -606,9 +606,40 @@ void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *fi
         }
         if(r.data != im.data) free_image(r);
         free_image(im);
-        free_network()
         if (filename) break;
     }
+}
+
+void* predict_classifier2(test * input){
+
+    network *net = input->net;
+    set_batch_network(net, 1);
+    srand(2222222);
+
+    int top = 5;
+
+    int i = 0;
+    char **names = input->names;
+    double time = what_time_is_it_now();
+    int *indexes = calloc(top, sizeof(int));
+
+    image im = input->im;
+    image r = letterbox_image(im, net->w, net->h);
+
+    float *X = r.data;
+
+    float *predictions = network_predict(net, X);
+    if(net->hierarchy) hierarchy_predictions(predictions, net->outputs, net->hierarchy, 1, 1);
+    top_k(predictions, net->outputs, top, indexes);
+    fprintf(stderr, "network : %s: Predicted in %lf seconds.\n", input->netName, what_time_is_it_now() - time);
+    for(i = 0; i < top; ++i){
+        int index = indexes[i];
+
+        printf("%5.2f%%: %s\n", predictions[index]*100, names[index]);
+    }
+    if(r.data != im.data) free_image(r);
+    free_image(im);
+    free_network(net);
 }
 
 

@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "array": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "shortcut_layer.h": "c",
+        "upsample_layer.h": "c"
+    }
+}
