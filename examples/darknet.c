@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define n_net 4
+
+
 extern void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *filename, int top);
 extern void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, char *outfile, int fullscreen);
 extern void run_yolo(int argc, char **argv);
@@ -23,6 +26,30 @@ extern void run_art(int argc, char **argv);
 extern void run_super(int argc, char **argv);
 extern void run_lsd(int argc, char **argv);
 extern void predict_classifier2(test * input);
+
+
+void R1(){
+	printf("R1\n");
+	while(1);
+	
+}
+
+void R2(){
+	printf("R2\n");
+	while(1);
+}
+
+void R3(){
+	printf("R3\n");
+	while(1);
+}
+
+void R4(){
+	printf("R4\n");
+	while(1);
+}
+
+
 
 void average(int argc, char *argv[])
 {
@@ -440,9 +467,21 @@ int main()
     char * resName = "Res";
 
     //network * vggNetwork = load_network("cfg/vgg-16.cfg", "vgg-16.weights", 0);
+
+#if 1 //hojin 2020 0213 : sapjil
+    network *denseNetwork[n_net];
+    network *resNetwork[n_net];
+
+    for(unsigned int k=0; k<n_net; k++){
+	denseNetwork[k] = (network *)load_network("cfg/densenet201.cfg", "densenet201.weights",0);
+	resNetwork[k] = (network *)load_network("cfg/resnet152.cfg", "resnet152.weights",0);
+    }
+#else
     network * denseNetwork = load_network("cfg/densenet201.cfg", "densenet201.weights",0);
     network * resNetwork = load_network("cfg/resnet152.cfg", "resnet152.weights",0);
-    
+
+#endif
+
     list *options = read_data_cfg("cfg/imagenet1k.data");
     char *name_list = option_find_str(options, "names", 0);
     if(!name_list) name_list = option_find_str(options, "labels", "data/labels.list");
@@ -460,7 +499,7 @@ int main()
     // fprintf(stderr, "vgg - ");
     // scanf("%d", vggCount);
     // getchar();
-
+#if 0
     fprintf(stderr, "denseNet - ");
     fflush(stdout);
     scanf("%d", &denseCount);
@@ -470,9 +509,13 @@ int main()
     fflush(stdout);
     scanf("%d", &resCount);
     getchar();
-   
+#endif   
     char buff[256];
     char *input = buff;
+    test *net_input_des[n_net];
+    test *net_input_res[n_net];
+
+#if 1
 
     while(1){
         printf("Enter Image Path: ");
@@ -482,14 +525,14 @@ int main()
         strtok(input, "\n");
         break;
     }
-    
+#endif    
     image im = load_image_color(buff, 0, 0);
 
     int allCount = vggCount + denseCount + resCount;
     double time = what_time_is_it_now();
-    pthread_t * networkArray = (pthread_t*)malloc(allCount * sizeof(pthread_t));
+    pthread_t networkArray_des[n_net];
+    pthread_t networkArray_res[n_net];
 
-    int count = 0;
 
     // for(int i=0; i<vggCount; ++i){
     //     test * input = (test*)malloc(sizeof(test));
@@ -501,29 +544,43 @@ int main()
     //     pthread_create(&networkArray[count], NULL,predict_classifier2, input);
     //     ++count;
     // }
-    for(int i=0; i<denseCount; ++i){
-        test * input = (test*)malloc(sizeof(test));
-        input->net = copy_network(densenet);
-        input->im = im;
-        input->names = names;
-        input->netName = denseName;
-        pthread_create(&networkArray[count], NULL,predict_classifier2, input);
-        ++count;
+    for(int i=0; i<n_net; i++){
+        net_input_des[i] = (test*)malloc(sizeof(test));
+        //net_input_des[i]->net = copy_network(denseNetwork[i]);
+        net_input_des[i]->net = denseNetwork[i];
+        // net_input_des[i]->im = im;
+	net_input_des[i]->input_path = input;
+        net_input_des[i]->names = names;
+        net_input_des[i]->netName = denseName;
+
+	printf(" It's turn for des i = %d\n",i);
+	if(pthread_create(&networkArray_des[i], NULL, predict_classifier2, net_input_des[i])<0){
+		perror("thread error");
+		exit(0);
+	}
     }
-    for(int i=0; i<resCount; ++i){
-        test * input = (test*)malloc(sizeof(test));
-        input->net = copy_network(resNetwork);
-        input->im = im;
-        input->names = names;
-        input->netName = resName;
-        pthread_create(&networkArray[count], NULL,predict_classifier2, input);
-        ++count;
+
+    for(int i=0; i<n_net; i++){
+        net_input_res[i] = (test*)malloc(sizeof(test));
+        //net_input[i]->net = copy_network(resNetwork);
+        net_input_res[i]->net = resNetwork[i];
+        // net_input_res[i]->im = im;
+	net_input_res[i]->input_path = input;
+        net_input_res[i]->names = names;
+        net_input_res[i]->netName = resName;
+
+	printf(" It's turn for res i = %d\n",i);
+      	if(pthread_create(&networkArray_res[i], NULL, predict_classifier2,net_input_res[i])<0){
+           perror("thread error");
+           exit(0);
+        }
     }    
 
-    for(int i=0; i<allCount; ++i){
-        pthread_join(networkArray[i], NULL);
+    for(int i=0; i<n_net; i++){
+        pthread_join(networkArray_des[i], NULL);
+        pthread_join(networkArray_res[i], NULL);
     } 
-    
+
     fprintf(stderr, "execution Time : %lf", what_time_is_it_now() - time);
     return 0;
 /*

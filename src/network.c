@@ -62,8 +62,13 @@ network *load_network(char *cfg, char *weights, int clear)
 }
 network* copy_network(network* source){
     network* des = (network*)malloc(sizeof(network));
-    *des = *source;
-
+    unsigned int temp_cnt;
+    unsigned char *temp_src_ptr = (unsigned char *)source;
+    unsigned char *temp_des_ptr = (unsigned char *)des;
+    temp_cnt = sizeof(network);
+    
+    for(unsigned int i=0;i<temp_cnt;i++) temp_des_ptr[i]=temp_src_ptr[i];	  
+#if 0
     des->seen = calloc(1, sizeof(size_t));
     des->t    = calloc(1, sizeof(int));
     des->cost = calloc(1, sizeof(float));
@@ -73,7 +78,7 @@ network* copy_network(network* source){
     des->workspace = calloc(1, source->workspace_size);
     des->scales = calloc(source->num_steps, sizeof(float));
     des->steps = calloc(source->num_steps, sizeof(int));
-    
+#endif    
 
     return des;
 }

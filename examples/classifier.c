@@ -610,6 +610,9 @@ void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *fi
     }
 }
 
+//hojin
+
+
 void* predict_classifier2(test * input){
 
     network *net = input->net;
@@ -623,12 +626,17 @@ void* predict_classifier2(test * input){
     double time = what_time_is_it_now();
     int *indexes = calloc(top, sizeof(int));
 
+#if 1
+    image im = load_image_color((char *)input->input_path, 0, 0);
+#else
     image im = input->im;
-    image r = letterbox_image(im, net->w, net->h);
+#endif
 
+    image r = letterbox_image(im, net->w, net->h);
     float *X = r.data;
 
     float *predictions = network_predict(net, X);
+
     if(net->hierarchy) hierarchy_predictions(predictions, net->outputs, net->hierarchy, 1, 1);
     top_k(predictions, net->outputs, top, indexes);
     fprintf(stderr, "network : %s: Predicted in %lf seconds.\n", input->netName, what_time_is_it_now() - time);
@@ -640,8 +648,11 @@ void* predict_classifier2(test * input){
     if(r.data != im.data) free_image(r);
     free_image(im);
     free_network(net);
-}
+    free(input);
 
+    //hojin
+    while(1);
+}
 
 void label_classifier(char *datacfg, char *filename, char *weightfile)
 {

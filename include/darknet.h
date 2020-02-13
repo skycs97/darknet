@@ -814,12 +814,13 @@ float rand_normal();
 float rand_uniform(float min, float max);
 network* copy_network(network*);
 
-struct {
+typedef struct _test{
     network *net;
     image im;
     char **names;
     char *netName;
-}typedef test;
+    char *input_path;
+}test;
 
 #ifdef __cplusplus
 }
