@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
+#include "thpool.h"
 
 #ifdef GPU
     #define BLOCK 512
@@ -22,7 +23,14 @@ extern "C" {
 #endif
 
 #define SECRET_NUM -1234
+
 extern int gpu_index;
+extern threadpool thpool;
+extern pthread_cond_t * cond_t;
+extern pthread_mutex_t * mutex_t;
+extern int * cond_i;
+#define THREAD_LAYER_MODE 1
+
 /*��Ÿ������*/
 typedef struct{
     int classes;
@@ -123,11 +131,18 @@ typedef struct network network;
 struct layer;
 typedef struct layer layer;
 
+struct _netlayer;
+typedef struct _netlayer netlayer;
+
 struct layer{
     LAYER_TYPE type;
     ACTIVATION activation;
     COST_TYPE cost_type;
     void (*forward)   (struct layer, struct network);
+    //2020 0213 cheolsun threadbody function add
+    #if THREAD_LAYER_MODE
+        void (*forward_thread) (netlayer*);
+    #endif
     void (*backward)  (struct layer, struct network);
     void (*update)    (struct layer, update_args);
     void (*forward_gpu)   (struct layer, struct network);
@@ -506,7 +521,9 @@ typedef struct network{
     float *output_gpu;
 #endif
 
-    pthread_cond_t network_cond;
+    //pthread_cond_t network_cond;
+    //pthread_mutex_t network_mutex;
+    int index_n;
 } network;
 
 typedef struct {
@@ -821,6 +838,11 @@ typedef struct _test{
     char *netName;
     char *input_path;
 }test;
+
+typedef struct _netlayer{
+    network  net;
+    layer  layer;
+}netlayer;
 
 #ifdef __cplusplus
 }

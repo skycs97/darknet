@@ -57,7 +57,7 @@ network *load_network(char *cfg, char *weights, int clear)
         load_weights(net, weights);
     }
     if(clear) (*net->seen) = 0;
-    pthread_cond_init(&(net->network_cond), NULL);
+
     return net;
 }
 network* copy_network(network* source){
@@ -208,6 +208,7 @@ network *make_network(int n)
     return net;
 }
 
+//2020 0213 cheolsun 네트워크 상태 변수 추가 및 network 쓰레드화 
 void forward_network(network *netp)
 {
 #ifdef GPU
@@ -218,19 +219,51 @@ void forward_network(network *netp)
 #endif
     network net = *netp;
     int i;
-    for(i = 0; i < net.n; ++i){
-        net.index = i;
-        layer l = net.layers[i];
-        if(l.delta){
-            fill_cpu(l.outputs * l.batch, 0, l.delta, 1);
+    #if THREAD_LAYER_MODE
+        for(i = 0; i < net.n; ++i){
+
+            pthread_mutex_lock(&mutex_t[net.index_n]);
+
+            cond_i[net.index_n] = 1;
+            net.index = i;
+            layer l = net.layers[i];
+            if(l.delta){
+                fill_cpu(l.outputs * l.batch, 0, l.delta, 1);
+            }
+            
+            netlayer input;
+            input.layer = l;
+            input.net = net;
+
+            thpool_add_work(thpool, l.forward_thread, &input);
+            while(cond_i[net.index_n] == 1){
+                pthread_cond_wait(&cond_t[net.index_n], &mutex_t[net.index_n]);
+            }
+
+
+            net.input = l.output;
+            if(l.truth) {
+                net.truth = l.output;
+            }
+            pthread_mutex_unlock(&mutex_t[net.index_n]);
+
         }
-        //������ �߰����� �κ�
-        l.forward(l, net);
-        net.input = l.output;
-        if(l.truth) {
-            net.truth = l.output;
+    #else
+        for(i = 0; i < net.n; ++i){
+            net.index = i;
+            layer l = net.layers[i];
+            if(l.delta){
+                fill_cpu(l.outputs * l.batch, 0, l.delta, 1);
+            }
+            fprintf(stderr, "%d\n", getpid());
+            
+            l.forward(l, net);
+            net.input = l.output;
+            if(l.truth) {
+                net.truth = l.output;
+            }
         }
-    }
+    #endif
     //calc_network_cost(netp);
 }
 

@@ -27,6 +27,9 @@ route_layer make_route_layer(int batch, int n, int *input_layers, int *input_siz
 
     l.forward = forward_route_layer;
     l.backward = backward_route_layer;
+    #if THREAD_LAYER_MODE
+    l.forward_thread = forward_route_layer_thread;
+    #endif
     #ifdef GPU
     l.forward_gpu = forward_route_layer_gpu;
     l.backward_gpu = backward_route_layer_gpu;
@@ -62,6 +65,7 @@ void resize_route_layer(route_layer *l, network *net)
     l->delta =  realloc(l->delta, l->outputs*l->batch*sizeof(float));
     l->output = realloc(l->output, l->outputs*l->batch*sizeof(float));
 
+
 #ifdef GPU
     cuda_free(l->output_gpu);
     cuda_free(l->delta_gpu);
@@ -85,6 +89,28 @@ void forward_route_layer(const route_layer l, network net)
         offset += input_size;
     }
 }
+#if THREAD_LAYER_MODE
+void forward_route_layer_thread(netlayer * input)
+{
+    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+    network net = input->net;
+    layer l = input->layer;
+    int i, j;
+    int offset = 0;
+    for(i = 0; i < l.n; ++i){
+        int index = l.input_layers[i];
+        float *input = net.layers[index].output;
+        int input_size = l.input_sizes[i];
+        for(j = 0; j < l.batch; ++j){
+            copy_cpu(input_size, input + j*input_size, 1, l.output + offset + j*l.outputs, 1);
+        }
+        offset += input_size;
+    }
+    cond_i[input->net.index_n] = 0;
+    pthread_cond_signal(&cond_t[input->net.index_n]);
+    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+}
+#endif
 
 void backward_route_layer(const route_layer l, network net)
 {

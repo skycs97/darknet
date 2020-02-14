@@ -11,6 +11,10 @@ void forward_normalization_layer(const layer layer, network net);
 void backward_normalization_layer(const layer layer, network net);
 void visualize_normalization_layer(layer layer, char *window);
 
+#if THREAD_LAYER_MODE
+void forward_normalization_layer_thread(netlayer* input);
+#endif
+
 #ifdef GPU
 void forward_normalization_layer_gpu(const layer layer, network net);
 void backward_normalization_layer_gpu(const layer layer, network net);

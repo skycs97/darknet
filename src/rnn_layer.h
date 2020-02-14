@@ -13,6 +13,10 @@ void forward_rnn_layer(layer l, network net);
 void backward_rnn_layer(layer l, network net);
 void update_rnn_layer(layer l, update_args a);
 
+#if THREAD_LAYER_MODE
+void forward_rnn_layer_thread(netlayer* input);
+#endif
+
 #ifdef GPU
 void forward_rnn_layer_gpu(layer l, network net);
 void backward_rnn_layer_gpu(layer l, network net);

@@ -16,6 +16,9 @@ dropout_layer make_dropout_layer(int batch, int inputs, float probability)
     l.scale = 1./(1.-probability);
     l.forward = forward_dropout_layer;
     l.backward = backward_dropout_layer;
+    #if THREAD_LAYER_MODE
+    l.forward_thread = forward_dropout_layer_thread;
+    #endif
     #ifdef GPU
     l.forward_gpu = forward_dropout_layer_gpu;
     l.backward_gpu = backward_dropout_layer_gpu;
@@ -46,6 +49,25 @@ void forward_dropout_layer(dropout_layer l, network net)
         else net.input[i] *= l.scale;
     }
 }
+#if THREAD_LAYER_MODE
+void forward_dropout_layer_thread(netlayer * input)
+{
+    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+    network net = input->net;
+    layer l = input->layer;
+    int i;
+    if (!net.train) return;
+    for(i = 0; i < l.batch * l.inputs; ++i){
+        float r = rand_uniform(0, 1);
+        l.rand[i] = r;
+        if(r < l.probability) net.input[i] = 0;
+        else net.input[i] *= l.scale;
+    }
+    cond_i[input->net.index_n] = 0;
+    pthread_cond_signal(&cond_t[input->net.index_n]);
+    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+}
+#endif
 
 void backward_dropout_layer(dropout_layer l, network net)
 {

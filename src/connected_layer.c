@@ -41,6 +41,9 @@ layer make_connected_layer(int batch, int inputs, int outputs, ACTIVATION activa
     l.forward = forward_connected_layer;
     l.backward = backward_connected_layer;
     l.update = update_connected_layer;
+    #if THREAD_LAYER_MODE
+    l.forward_thread = forward_connected_layer_thread;
+    #endif
 
     //float scale = 1./sqrt(inputs);
     float scale = sqrt(2./inputs);
@@ -165,6 +168,32 @@ void forward_connected_layer(layer l, network net)
     }
     activate_array(l.output, l.outputs*l.batch, l.activation);
 }
+
+#if THREAD_LAYER_MODE
+void forward_connected_layer_thread(netlayer * input){
+    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+    network net = input->net;
+    layer l = input->layer;
+
+    fill_cpu(l.outputs*l.batch, 0, l.output, 1);
+    int m = l.batch;
+    int k = l.inputs;
+    int n = l.outputs;
+    float *a = net.input;
+    float *b = l.weights;
+    float *c = l.output;
+    gemm(0,1,m,n,k,1,a,k,b,k,1,c,n);
+    if(l.batch_normalize){
+        forward_batchnorm_layer(l, net);
+    } else {
+        add_bias(l.output, l.biases, l.batch, l.outputs, 1);
+    }
+    activate_array(l.output, l.outputs*l.batch, l.activation);
+    cond_i[input->net.index_n] = 0;
+    pthread_cond_signal(&cond_t[input->net.index_n]);
+    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+}
+#endif
 
 void backward_connected_layer(layer l, network net)
 {

@@ -1,12 +1,10 @@
 #include "darknet.h"
-#include "thpool.h"
 
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-#define n_net 4
-
+#define n_net 2
 
 extern void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *filename, int top);
 extern void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, char *outfile, int fullscreen);
@@ -26,29 +24,6 @@ extern void run_art(int argc, char **argv);
 extern void run_super(int argc, char **argv);
 extern void run_lsd(int argc, char **argv);
 extern void predict_classifier2(test * input);
-
-
-void R1(){
-	printf("R1\n");
-	while(1);
-	
-}
-
-void R2(){
-	printf("R2\n");
-	while(1);
-}
-
-void R3(){
-	printf("R3\n");
-	while(1);
-}
-
-void R4(){
-	printf("R4\n");
-	while(1);
-}
-
 
 
 void average(int argc, char *argv[])
@@ -430,8 +405,11 @@ void choiceNetwork()
 {
     
 }
-
 threadpool thpool;
+//각 네트워크의 조건변수, mutex변수, wait를 위한 변수 선언 헤더에 extern변수로 지정
+pthread_cond_t* cond_t;
+pthread_mutex_t* mutex_t;
+int* cond_i;
 
 int main()
 {
@@ -456,7 +434,7 @@ int main()
     }
 #endif
 
-    //thpool = thpool_init(4);
+    thpool = thpool_init(4);
 
     //char** vgg = {"darknet", "classfier", "predict", "cfg/imagenet1k.data", "cfg/","", "data/eagle.jpg"};
     char** densenet = {"darknet", "classfier", "predict", "cfg/imagenet1k.data", "cfg/", "", "data/eagle.jpg"};
@@ -466,21 +444,26 @@ int main()
     char * denseName = "Dense";
     char * resName = "Res";
 
-    //network * vggNetwork = load_network("cfg/vgg-16.cfg", "vgg-16.weights", 0);
-
-#if 1 //hojin 2020 0213 : sapjil
     network *denseNetwork[n_net];
     network *resNetwork[n_net];
 
-    for(unsigned int k=0; k<n_net; k++){
-	denseNetwork[k] = (network *)load_network("cfg/densenet201.cfg", "densenet201.weights",0);
-	resNetwork[k] = (network *)load_network("cfg/resnet152.cfg", "resnet152.weights",0);
-    }
-#else
-    network * denseNetwork = load_network("cfg/densenet201.cfg", "densenet201.weights",0);
-    network * resNetwork = load_network("cfg/resnet152.cfg", "resnet152.weights",0);
+    //변수 동적할당
+    cond_t = (pthread_cond_t*)malloc(sizeof(pthread_cond_t) * n_net*2);
+    mutex_t = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t) * n_net*2);
+    cond_i = (int*)malloc(sizeof(int) * n_net * 2);
 
-#endif
+    for(int i=0; i< n_net*2; i++){
+        pthread_cond_init(&cond_t[i], NULL);
+        pthread_mutex_init(&mutex_t[i], NULL);
+        cond_i[i] = 0;
+    }
+
+    for(unsigned int k=0; k<n_net; k++){
+        denseNetwork[k] = (network *)load_network("cfg/densenet201.cfg", "densenet201.weights",0);
+        denseNetwork[k]->index_n = k;
+        resNetwork[k] = (network *)load_network("cfg/resnet152.cfg", "resnet152.weights",0);
+        resNetwork[k]->index_n = k+n_net;
+    }
 
     list *options = read_data_cfg("cfg/imagenet1k.data");
     char *name_list = option_find_str(options, "names", 0);
@@ -490,32 +473,11 @@ int main()
     int i = 0;
     char **names = get_labels(name_list);
 
-    int argc = 0;
 
-    int vggCount = 0;
-    int denseCount = 0;
-    int resCount = 0;
-
-    // fprintf(stderr, "vgg - ");
-    // scanf("%d", vggCount);
-    // getchar();
-#if 0
-    fprintf(stderr, "denseNet - ");
-    fflush(stdout);
-    scanf("%d", &denseCount);
-    getchar();
-
-    fprintf(stderr, "resnet - ");
-    fflush(stdout);
-    scanf("%d", &resCount);
-    getchar();
-#endif   
     char buff[256];
     char *input = buff;
     test *net_input_des[n_net];
     test *net_input_res[n_net];
-
-#if 1
 
     while(1){
         printf("Enter Image Path: ");
@@ -525,10 +487,9 @@ int main()
         strtok(input, "\n");
         break;
     }
-#endif    
+
     image im = load_image_color(buff, 0, 0);
 
-    int allCount = vggCount + denseCount + resCount;
     double time = what_time_is_it_now();
     pthread_t networkArray_des[n_net];
     pthread_t networkArray_res[n_net];
@@ -546,35 +507,31 @@ int main()
     // }
     for(int i=0; i<n_net; i++){
         net_input_des[i] = (test*)malloc(sizeof(test));
-        //net_input_des[i]->net = copy_network(denseNetwork[i]);
         net_input_des[i]->net = denseNetwork[i];
-        // net_input_des[i]->im = im;
-	net_input_des[i]->input_path = input;
+	    net_input_des[i]->input_path = input;
         net_input_des[i]->names = names;
         net_input_des[i]->netName = denseName;
 
-	printf(" It's turn for des i = %d\n",i);
-	if(pthread_create(&networkArray_des[i], NULL, predict_classifier2, net_input_des[i])<0){
-		perror("thread error");
-		exit(0);
-	}
+	    printf(" It's turn for des i = %d\n",i);
+        if(pthread_create(&networkArray_des[i], NULL, predict_classifier2, net_input_des[i])<0){
+            perror("thread error");
+            exit(0);
+        }
     }
 
     for(int i=0; i<n_net; i++){
         net_input_res[i] = (test*)malloc(sizeof(test));
-        //net_input[i]->net = copy_network(resNetwork);
         net_input_res[i]->net = resNetwork[i];
-        // net_input_res[i]->im = im;
-	net_input_res[i]->input_path = input;
+	    net_input_res[i]->input_path = input;
         net_input_res[i]->names = names;
         net_input_res[i]->netName = resName;
 
-	printf(" It's turn for res i = %d\n",i);
+	    printf(" It's turn for res i = %d\n",i);
       	if(pthread_create(&networkArray_res[i], NULL, predict_classifier2,net_input_res[i])<0){
            perror("thread error");
            exit(0);
-        }
-    }    
+          }
+    }
 
     for(int i=0; i<n_net; i++){
         pthread_join(networkArray_des[i], NULL);
@@ -582,6 +539,10 @@ int main()
     } 
 
     fprintf(stderr, "execution Time : %lf", what_time_is_it_now() - time);
+
+    free(cond_t);
+    free(mutex_t);
+    free(cond_i);
     return 0;
 /*
     if (0 == strcmp(argv[1], "average")){

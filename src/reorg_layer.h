@@ -11,6 +11,10 @@ void resize_reorg_layer(layer *l, int w, int h);
 void forward_reorg_layer(const layer l, network net);
 void backward_reorg_layer(const layer l, network net);
 
+#if THREAD_LAYER_MODE
+void forward_reorg_layer_thread(netlayer* input);
+#endif
+
 #ifdef GPU
 void forward_reorg_layer_gpu(layer l, network net);
 void backward_reorg_layer_gpu(layer l, network net);

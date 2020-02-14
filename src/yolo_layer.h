@@ -11,6 +11,10 @@ void backward_yolo_layer(const layer l, network net);
 void resize_yolo_layer(layer *l, int w, int h);
 int yolo_num_detections(layer l, float thresh);
 
+#if THREAD_LAYER_MODE
+void forward_yolo_layer_thread(netlayer* input);
+#endif
+
 #ifdef GPU
 void forward_yolo_layer_gpu(const layer l, network net);
 void backward_yolo_layer_gpu(layer l, network net);

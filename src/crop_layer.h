@@ -12,6 +12,10 @@ crop_layer make_crop_layer(int batch, int h, int w, int c, int crop_height, int 
 void forward_crop_layer(const crop_layer l, network net);
 void resize_crop_layer(layer *l, int w, int h);
 
+#if THREAD_LAYER_MODE
+void forward_crop_layer_thread(netlayer* input);
+#endif
+
 #ifdef GPU
 void forward_crop_layer_gpu(crop_layer l, network net);
 #endif

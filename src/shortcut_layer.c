@@ -24,10 +24,13 @@ layer make_shortcut_layer(int batch, int index, int w, int h, int c, int w2, int
     l.index = index;
 
     l.delta =  calloc(l.outputs*batch, sizeof(float));
-    l.output = calloc(l.outputs*batch, sizeof(float));;
+    l.output = calloc(l.outputs*batch, sizeof(float));
 
     l.forward = forward_shortcut_layer;
     l.backward = backward_shortcut_layer;
+    #if THREAD_LAYER_MODE
+    l.forward_thread = forward_shortcut_layer_thread;
+    #endif
     #ifdef GPU
     l.forward_gpu = forward_shortcut_layer_gpu;
     l.backward_gpu = backward_shortcut_layer_gpu;
@@ -65,6 +68,20 @@ void forward_shortcut_layer(const layer l, network net)
     shortcut_cpu(l.batch, l.w, l.h, l.c, net.layers[l.index].output, l.out_w, l.out_h, l.out_c, l.alpha, l.beta, l.output);
     activate_array(l.output, l.outputs*l.batch, l.activation);
 }
+#if THREAD_LAYER_MODE
+void forward_shortcut_layer_thread(netlayer * input)
+{
+    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+    network net = input->net;
+    layer l = input->layer;
+    copy_cpu(l.outputs*l.batch, net.input, 1, l.output, 1);
+    shortcut_cpu(l.batch, l.w, l.h, l.c, net.layers[l.index].output, l.out_w, l.out_h, l.out_c, l.alpha, l.beta, l.output);
+    activate_array(l.output, l.outputs*l.batch, l.activation);
+    cond_i[input->net.index_n] = 0;
+    pthread_cond_signal(&cond_t[input->net.index_n]);
+    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+}
+#endif
 
 void backward_shortcut_layer(const layer l, network net)
 {

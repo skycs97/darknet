@@ -18,6 +18,10 @@ void push_local_layer(local_layer layer);
 void pull_local_layer(local_layer layer);
 #endif
 
+#if THREAD_LAYER_MODE
+void forward_local_layer_thread(netlayer* input);
+#endif
+
 local_layer make_local_layer(int batch, int h, int w, int c, int n, int size, int stride, int pad, ACTIVATION activation);
 
 void forward_local_layer(const local_layer layer, network net);

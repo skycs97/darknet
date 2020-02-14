@@ -626,11 +626,7 @@ void* predict_classifier2(test * input){
     double time = what_time_is_it_now();
     int *indexes = calloc(top, sizeof(int));
 
-#if 1
     image im = load_image_color((char *)input->input_path, 0, 0);
-#else
-    image im = input->im;
-#endif
 
     image r = letterbox_image(im, net->w, net->h);
     float *X = r.data;

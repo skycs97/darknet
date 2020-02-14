@@ -40,11 +40,11 @@ maxpool_layer make_maxpool_layer(int batch, int h, int w, int c, int size, int s
     l.delta =   calloc(output_size, sizeof(float));
     l.forward = forward_maxpool_layer;
     l.backward = backward_maxpool_layer;
+    #if THREAD_LAYER_MODE
+    l.forward_thread = forward_maxpool_layer_thread;
+    #endif
     #ifdef GPU
-    l.forward_gpu = forward_maxpool_layer_gpu;
-    l.backward_gpu = backward_maxpool_layer_gpu;
-    l.indexes_gpu = cuda_make_int_array(0, output_size);
-    l.output_gpu  = cuda_make_array(l.output, output_size);
+    l.forward_gpu = forward_maxpool_layer_gpu;layerput_size);
     l.delta_gpu   = cuda_make_array(l.delta, output_size);
     #endif
     fprintf(stderr, "max          %d x %d / %d  %4d x%4d x%4d   ->  %4d x%4d x%4d\n", size, size, stride, w, h, c, l.out_w, l.out_h, l.out_c);
@@ -112,6 +112,53 @@ void forward_maxpool_layer(const maxpool_layer l, network net)
         }
     }
 }
+#if THREAD_LAYER_MODE
+void forward_maxpool_layer_thread(netlayer* input)
+{
+    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+
+    network net = input->net;
+    layer l = input->layer;
+
+    int b,i,j,k,m,n;
+    int w_offset = -l.pad/2;
+    int h_offset = -l.pad/2;
+
+    int h = l.out_h;
+    int w = l.out_w;
+    int c = l.c;
+
+    for(b = 0; b < l.batch; ++b){
+        for(k = 0; k < c; ++k){
+            for(i = 0; i < h; ++i){
+                for(j = 0; j < w; ++j){
+                    int out_index = j + w*(i + h*(k + c*b));
+                    float max = -FLT_MAX;
+                    int max_i = -1;
+                    for(n = 0; n < l.size; ++n){
+                        for(m = 0; m < l.size; ++m){
+                            int cur_h = h_offset + i*l.stride + n;
+                            int cur_w = w_offset + j*l.stride + m;
+                            int index = cur_w + l.w*(cur_h + l.h*(k + b*l.c));
+                            int valid = (cur_h >= 0 && cur_h < l.h &&
+                                         cur_w >= 0 && cur_w < l.w);
+                            float val = (valid != 0) ? net.input[index] : -FLT_MAX;
+                            max_i = (val > max) ? index : max_i;
+                            max   = (val > max) ? val   : max;
+                        }
+                    }
+                    l.output[out_index] = max;
+                    l.indexes[out_index] = max_i;
+                }
+            }
+        }
+    }
+    cond_i[input->net.index_n] = 0;
+
+    pthread_cond_signal(&cond_t[input->net.index_n]);
+    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+}
+#endif
 
 void backward_maxpool_layer(const maxpool_layer l, network net)
 {

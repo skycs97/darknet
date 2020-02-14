@@ -10,6 +10,10 @@ void forward_route_layer(const route_layer l, network net);
 void backward_route_layer(const route_layer l, network net);
 void resize_route_layer(route_layer *l, network *net);
 
+#if THREAD_LAYER_MODE
+void forward_route_layer_thread(netlayer* input);
+#endif
+
 #ifdef GPU
 void forward_route_layer_gpu(const route_layer l, network net);
 void backward_route_layer_gpu(const route_layer l, network net);

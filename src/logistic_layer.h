@@ -7,6 +7,10 @@ layer make_logistic_layer(int batch, int inputs);
 void forward_logistic_layer(const layer l, network net);
 void backward_logistic_layer(const layer l, network net);
 
+#if THREAD_LAYER_MODE
+void forward_logistic_layer_thread(netlayer* input);
+#endif
+
 #ifdef GPU
 void forward_logistic_layer_gpu(const layer l, network net);
 void backward_logistic_layer_gpu(const layer l, network net);

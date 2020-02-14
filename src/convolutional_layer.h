@@ -8,6 +8,9 @@
 #include "network.h"
 
 typedef layer convolutional_layer;
+#if THREAD_LAYER_MODE
+void forward_convolutional_layer_thread(netlayer* input);
+#endif
 
 #ifdef GPU
 void forward_convolutional_layer_gpu(convolutional_layer layer, network net);

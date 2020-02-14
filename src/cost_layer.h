@@ -12,6 +12,10 @@ void forward_cost_layer(const cost_layer l, network net);
 void backward_cost_layer(const cost_layer l, network net);
 void resize_cost_layer(cost_layer *l, int inputs);
 
+#if THREAD_LAYER_MODE
+void forward_cost_layer_thread(netlayer* input);
+#endif
+
 #ifdef GPU
 void forward_cost_layer_gpu(cost_layer l, network net);
 void backward_cost_layer_gpu(const cost_layer l, network net);
