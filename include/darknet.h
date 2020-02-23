@@ -29,7 +29,12 @@ extern threadpool thpool;
 extern pthread_cond_t * cond_t;
 extern pthread_mutex_t * mutex_t;
 extern int * cond_i;
+
+
 #define THREAD_LAYER_MODE 1
+#define n_net 2
+#define THREAD_NUM_POOL 4
+
 
 /*��Ÿ������*/
 typedef struct{

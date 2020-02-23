@@ -157,11 +157,10 @@ struct thpool_* thpool_init(int num_threads){
 	for (n=0; n<num_threads; n++){
 		thread_init(thpool_p, &thpool_p->threads[n], n);
  
-		/* thread CPU pinning */
+		/* kmsjames 2020 0215 bug fix for pinning each thread on a specified CPU */
 		CPU_ZERO(&cpuset);
-		for(int j=0; j<8; j++) CPU_SET(j, &cpuset);	
+		CPU_SET(n, &cpuset); //only this thread has the affinity for the 'n'-th CPU	
 		pthread_setaffinity_np(thpool_p->threads[n]->pthread, sizeof(cpu_set_t), &cpuset);
-		//printf("\n cpuset value = %d\n",  (int)cpuset);
 
 #if THPOOL_DEBUG
 			printf("THPOOL_DEBUG: Created thread %d in pool \n", n);
@@ -318,6 +317,10 @@ static void thread_hold(int sig_id) {
 * @param  thread        thread that will run this function
 * @return nothing
 */
+
+//kmsjames 2020 0215
+unsigned int th_exit_cnt = 0;
+
 static void* thread_do(struct thread* thread_p){
 
 	/* Set thread name for profiling and debuging */
@@ -383,6 +386,11 @@ static void* thread_do(struct thread* thread_p){
 	pthread_mutex_lock(&thpool_p->thcount_lock);
 	thpool_p->num_threads_alive --;
 	pthread_mutex_unlock(&thpool_p->thcount_lock);
+
+	//kmsjames 2020 0215 for monitoring thread lifetime
+	th_exit_cnt++;
+	printf("\n threads_keepalive: %d, thread_do exit count: %d\n", threads_keepalive, th_exit_cnt);
+
 
 	return NULL;
 }

@@ -255,7 +255,6 @@ void forward_network(network *netp)
             if(l.delta){
                 fill_cpu(l.outputs * l.batch, 0, l.delta, 1);
             }
-            fprintf(stderr, "%d\n", getpid());
             
             l.forward(l, net);
             net.input = l.output;

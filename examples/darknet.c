@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define n_net 2
+//#define n_net 4
 
 extern void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *filename, int top);
 extern void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, char *outfile, int fullscreen);
@@ -434,7 +434,9 @@ int main()
     }
 #endif
 
-    thpool = thpool_init(4);
+#if THREAD_LAYER_MODE    
+    thpool = thpool_init(THREAD_NUM_POOL);
+#endif
 
     //char** vgg = {"darknet", "classfier", "predict", "cfg/imagenet1k.data", "cfg/","", "data/eagle.jpg"};
     char** densenet = {"darknet", "classfier", "predict", "cfg/imagenet1k.data", "cfg/", "", "data/eagle.jpg"};
@@ -537,8 +539,13 @@ int main()
         pthread_join(networkArray_des[i], NULL);
         pthread_join(networkArray_res[i], NULL);
     } 
+#if THREAD_LAYER_MODE
+    //kmsjames 2020 0215
+    for(i=0; i<THREAD_NUM_POOL;i++)
+	    pthread_join(thpool->threads[i]->pthread, NULL);
+#endif
 
-    fprintf(stderr, "execution Time : %lf", what_time_is_it_now() - time);
+    fprintf(stderr, "\n execution Time : %lf\n", what_time_is_it_now() - time);
 
     free(cond_t);
     free(mutex_t);
