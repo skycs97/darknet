@@ -6,5 +6,6 @@
         "shortcut_layer.h": "c",
         "upsample_layer.h": "c",
         "softmax_layer.h": "c"
-    }
+    },
+    "C_Cpp.dimInactiveRegions": false
 }
