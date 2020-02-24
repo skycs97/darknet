@@ -12,7 +12,7 @@ void forward_cost_layer(const cost_layer l, network net);
 void backward_cost_layer(const cost_layer l, network net);
 void resize_cost_layer(cost_layer *l, int inputs);
 
-#if THREAD_LAYER_MODE
+#ifdef THREAD
 void forward_cost_layer_thread(netlayer* input);
 #endif
 

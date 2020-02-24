@@ -15,7 +15,7 @@ void push_deconvolutional_layer(layer l);
 void pull_deconvolutional_layer(layer l);
 #endif
 
-#if THREAD_LAYER_MODE
+#ifdef THREAD
 void forward_deconvolutional_layer_thread(netlayer* input);
 #endif
 

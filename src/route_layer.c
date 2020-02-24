@@ -27,7 +27,7 @@ route_layer make_route_layer(int batch, int n, int *input_layers, int *input_siz
 
     l.forward = forward_route_layer;
     l.backward = backward_route_layer;
-    #if THREAD_LAYER_MODE
+    #ifdef THREAD
     l.forward_thread = forward_route_layer_thread;
     #endif
     #ifdef GPU
@@ -89,7 +89,7 @@ void forward_route_layer(const route_layer l, network net)
         offset += input_size;
     }
 }
-#if THREAD_LAYER_MODE
+#ifdef THREAD
 void forward_route_layer_thread(netlayer * input)
 {
     pthread_mutex_lock(&mutex_t[input->net.index_n]);

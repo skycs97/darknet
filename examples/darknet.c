@@ -434,7 +434,7 @@ int main()
     }
 #endif
 
-#if THREAD_LAYER_MODE    
+#ifdef THREAD    
     thpool = thpool_init(THREAD_NUM_POOL);
 #endif
 
@@ -539,7 +539,7 @@ int main()
         pthread_join(networkArray_des[i], NULL);
         pthread_join(networkArray_res[i], NULL);
     } 
-#if THREAD_LAYER_MODE
+#ifdef THREAD
     //kmsjames 2020 0215
     for(i=0; i<THREAD_NUM_POOL;i++)
 	    pthread_join(thpool->threads[i]->pthread, NULL);

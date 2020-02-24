@@ -23,18 +23,17 @@ extern "C" {
 #endif
 
 #define SECRET_NUM -1234
-
 extern int gpu_index;
+
+#ifdef THREAD
 extern threadpool thpool;
 extern pthread_cond_t * cond_t;
 extern pthread_mutex_t * mutex_t;
 extern int * cond_i;
+#endif
 
-
-#define THREAD_LAYER_MODE 1
 #define n_net 2
 #define THREAD_NUM_POOL 4
-
 
 /*��Ÿ������*/
 typedef struct{
@@ -145,7 +144,7 @@ struct layer{
     COST_TYPE cost_type;
     void (*forward)   (struct layer, struct network);
     //2020 0213 cheolsun threadbody function add
-    #if THREAD_LAYER_MODE
+    #ifdef THREAD
         void (*forward_thread) (netlayer*);
     #endif
     void (*backward)  (struct layer, struct network);

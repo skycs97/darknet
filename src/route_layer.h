@@ -10,7 +10,7 @@ void forward_route_layer(const route_layer l, network net);
 void backward_route_layer(const route_layer l, network net);
 void resize_route_layer(route_layer *l, network *net);
 
-#if THREAD_LAYER_MODE
+#ifdef THREAD
 void forward_route_layer_thread(netlayer* input);
 #endif
 

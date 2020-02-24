@@ -11,7 +11,7 @@ dropout_layer make_dropout_layer(int batch, int inputs, float probability);
 void forward_dropout_layer(dropout_layer l, network net);
 void backward_dropout_layer(dropout_layer l, network net);
 void resize_dropout_layer(dropout_layer *l, int inputs);
-#if THREAD_LAYER_MODE
+#ifdef THREAD
 void forward_dropout_layer_thread(netlayer* input);
 #endif
 

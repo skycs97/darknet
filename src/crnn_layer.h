@@ -12,7 +12,7 @@ void forward_crnn_layer(layer l, network net);
 void backward_crnn_layer(layer l, network net);
 void update_crnn_layer(layer l, update_args a);
 
-#if THREAD_LAYER_MODE
+#ifdef THREAD
 void forward_crnn_layer_thread(netlayer* input);
 #endif
 

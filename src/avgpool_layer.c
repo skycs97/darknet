@@ -21,7 +21,7 @@ avgpool_layer make_avgpool_layer(int batch, int w, int h, int c)
     l.delta =   calloc(output_size, sizeof(float));
     l.forward = forward_avgpool_layer;
     l.backward = backward_avgpool_layer;
-    #if THREAD_LAYER_MODE
+    #ifdef THREAD
     l.forward_thread = forward_avgpool_layer_thread;
     #endif
     #ifdef GPU
@@ -56,7 +56,7 @@ void forward_avgpool_layer(const avgpool_layer l, network net)
         }
     }
 }
-#if THREAD_LAYER_MODE
+#ifdef THREAD
 void forward_avgpool_layer_thread(netlayer* input){
     pthread_mutex_lock(&mutex_t[input->net.index_n]);
     network net = input->net;

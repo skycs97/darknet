@@ -7,7 +7,7 @@ void forward_upsample_layer(const layer l, network net);
 void backward_upsample_layer(const layer l, network net);
 void resize_upsample_layer(layer *l, int w, int h);
 
-#if THREAD_LAYER_MODE
+#ifdef THREAD
 void forward_upsample_layer_thread(netlayer* input);
 #endif
 

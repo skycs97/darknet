@@ -25,7 +25,7 @@ softmax_layer make_softmax_layer(int batch, int inputs, int groups)
 
     l.forward = forward_softmax_layer;
     l.backward = backward_softmax_layer;
-    #if THREAD_LAYER_MODE
+    #ifdef THREAD
     l.forward_thread = forward_softmax_layer_thread;
     #endif
     #ifdef GPU
@@ -58,7 +58,7 @@ void forward_softmax_layer(const softmax_layer l, network net)
         l.cost[0] = sum_array(l.loss, l.batch*l.inputs);
     }
 }
-#if THREAD_LAYER_MODE
+#ifdef THREAD
 void forward_softmax_layer_thread(netlayer * input)
 {
     pthread_mutex_lock(&mutex_t[input->net.index_n]);

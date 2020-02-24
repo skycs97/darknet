@@ -11,7 +11,7 @@ layer make_lstm_layer(int batch, int inputs, int outputs, int steps, int batch_n
 void forward_lstm_layer(layer l, network net); 
 void update_lstm_layer(layer l, update_args a);
 
-#if THREAD_LAYER_MODE
+#ifdef THREAD
 void forward_lstm_layer_thread(netlayer* input);
 #endif
 

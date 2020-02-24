@@ -36,7 +36,7 @@ crop_layer make_crop_layer(int batch, int h, int w, int c, int crop_height, int 
     l.forward = forward_crop_layer;
     l.backward = backward_crop_layer;
 
-    #if THREAD_LAYER_MODE
+    #ifdef THREAD
     l.forward_thread = forward_crop_layer_thread;
     #endif
 
@@ -105,7 +105,7 @@ void forward_crop_layer(const crop_layer l, network net)
     }
 }
 
-#if THREAD_LAYER_MODE
+#ifdef THREAD
 void forward_crop_layer_thread(netlayer * input)
 {
     pthread_mutex_lock(&mutex_t[input->net.index_n]);

@@ -219,7 +219,7 @@ void forward_network(network *netp)
 #endif
     network net = *netp;
     int i;
-    #if THREAD_LAYER_MODE
+    #ifdef THREAD
         for(i = 0; i < net.n; ++i){
 
             pthread_mutex_lock(&mutex_t[net.index_n]);

@@ -18,7 +18,7 @@ void push_local_layer(local_layer layer);
 void pull_local_layer(local_layer layer);
 #endif
 
-#if THREAD_LAYER_MODE
+#ifdef THREAD
 void forward_local_layer_thread(netlayer* input);
 #endif
 

@@ -40,7 +40,7 @@ maxpool_layer make_maxpool_layer(int batch, int h, int w, int c, int size, int s
     l.delta =   calloc(output_size, sizeof(float));
     l.forward = forward_maxpool_layer;
     l.backward = backward_maxpool_layer;
-    #if THREAD_LAYER_MODE
+    #ifdef THREAD
     l.forward_thread = forward_maxpool_layer_thread;
     #endif
     #ifdef GPU
@@ -112,7 +112,7 @@ void forward_maxpool_layer(const maxpool_layer l, network net)
         }
     }
 }
-#if THREAD_LAYER_MODE
+#ifdef THREAD
 void forward_maxpool_layer_thread(netlayer* input)
 {
     pthread_mutex_lock(&mutex_t[input->net.index_n]);

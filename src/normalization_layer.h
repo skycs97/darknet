@@ -11,7 +11,7 @@ void forward_normalization_layer(const layer layer, network net);
 void backward_normalization_layer(const layer layer, network net);
 void visualize_normalization_layer(layer layer, char *window);
 
-#if THREAD_LAYER_MODE
+#ifdef THREAD
 void forward_normalization_layer_thread(netlayer* input);
 #endif
 

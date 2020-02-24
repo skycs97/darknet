@@ -11,7 +11,7 @@ void backward_iseg_layer(const layer l, network net);
 void resize_iseg_layer(layer *l, int w, int h);
 int iseg_num_detections(layer l, float thresh);
 
-#if THREAD_LAYER_MODE
+#ifdef THREAD
 void forward_iseg_layer_thread(netlayer* input);
 #endif
 

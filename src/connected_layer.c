@@ -41,7 +41,7 @@ layer make_connected_layer(int batch, int inputs, int outputs, ACTIVATION activa
     l.forward = forward_connected_layer;
     l.backward = backward_connected_layer;
     l.update = update_connected_layer;
-    #if THREAD_LAYER_MODE
+    #ifdef THREAD
     l.forward_thread = forward_connected_layer_thread;
     #endif
 
@@ -169,7 +169,7 @@ void forward_connected_layer(layer l, network net)
     activate_array(l.output, l.outputs*l.batch, l.activation);
 }
 
-#if THREAD_LAYER_MODE
+#ifdef THREAD
 void forward_connected_layer_thread(netlayer * input){
     pthread_mutex_lock(&mutex_t[input->net.index_n]);
     network net = input->net;

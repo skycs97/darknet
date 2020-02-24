@@ -14,7 +14,7 @@ void resize_avgpool_layer(avgpool_layer *l, int w, int h);
 void forward_avgpool_layer(const avgpool_layer l, network net);
 void backward_avgpool_layer(const avgpool_layer l, network net);
 
-#if THREAD_LAYER_MODE
+#ifdef THREAD
 void forward_avgpool_layer_thread(netlayer* input);
 #endif
 

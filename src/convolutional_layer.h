@@ -8,7 +8,7 @@
 #include "network.h"
 
 typedef layer convolutional_layer;
-#if THREAD_LAYER_MODE
+#ifdef THREAD
 void forward_convolutional_layer_thread(netlayer* input);
 #endif
 

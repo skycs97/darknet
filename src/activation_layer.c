@@ -22,7 +22,7 @@ layer make_activation_layer(int batch, int inputs, ACTIVATION activation)
     l.delta = calloc(batch*inputs, sizeof(float*));
 
     l.forward = forward_activation_layer;
-#if THREAD_LAYER_MODE
+#ifdef THREAD
     l.forward_thread = forward_activation_layer_thread;
 #endif
     l.backward = backward_activation_layer;
@@ -43,7 +43,7 @@ void forward_activation_layer(layer l, network net)
     copy_cpu(l.outputs*l.batch, net.input, 1, l.output, 1);
     activate_array(l.output, l.outputs*l.batch, l.activation);
 }
-#if THREAD_LAYER_MODE
+#ifdef THREAD
 void forward_activation_layer_thread(netlayer* input){
     pthread_mutex_lock(&mutex_t[input->net.index_n]);
 

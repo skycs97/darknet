@@ -28,7 +28,7 @@ layer make_shortcut_layer(int batch, int index, int w, int h, int c, int w2, int
 
     l.forward = forward_shortcut_layer;
     l.backward = backward_shortcut_layer;
-    #if THREAD_LAYER_MODE
+    #ifdef THREAD
     l.forward_thread = forward_shortcut_layer_thread;
     #endif
     #ifdef GPU
@@ -68,7 +68,7 @@ void forward_shortcut_layer(const layer l, network net)
     shortcut_cpu(l.batch, l.w, l.h, l.c, net.layers[l.index].output, l.out_w, l.out_h, l.out_c, l.alpha, l.beta, l.output);
     activate_array(l.output, l.outputs*l.batch, l.activation);
 }
-#if THREAD_LAYER_MODE
+#ifdef THREAD
 void forward_shortcut_layer_thread(netlayer * input)
 {
     pthread_mutex_lock(&mutex_t[input->net.index_n]);

@@ -9,7 +9,7 @@ layer make_batchnorm_layer(int batch, int w, int h, int c);
 void forward_batchnorm_layer(layer l, network net);
 void backward_batchnorm_layer(layer l, network net);
 
-#if THREAD_LAYER_MODE
+#ifdef THREAD
 void forward_batchnorm_layer_thread(netlayer* input);
 #endif
 

@@ -13,7 +13,7 @@ void forward_rnn_layer(layer l, network net);
 void backward_rnn_layer(layer l, network net);
 void update_rnn_layer(layer l, update_args a);
 
-#if THREAD_LAYER_MODE
+#ifdef THREAD
 void forward_rnn_layer_thread(netlayer* input);
 #endif
 
