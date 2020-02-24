@@ -44,7 +44,7 @@ maxpool_layer make_maxpool_layer(int batch, int h, int w, int c, int size, int s
     l.forward_thread = forward_maxpool_layer_thread;
     #endif
     #ifdef GPU
-    l.forward_gpu = forward_maxpool_layer_gpu;layerput_size);
+    l.forward_gpu = forward_maxpool_layer_gpu;
     #ifdef THREAD
     l.forward_gpu_thread = forward_maxpool_layer_gpu_thread;
     #endif
