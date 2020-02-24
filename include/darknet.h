@@ -23,17 +23,17 @@ extern "C" {
 #endif
 
 #define SECRET_NUM -1234
+
 extern int gpu_index;
+extern threadpool thpool;
+#define THREAD_NUM_POOL 8
+#define n_net 8
 
 #ifdef THREAD
-extern threadpool thpool;
 extern pthread_cond_t * cond_t;
 extern pthread_mutex_t * mutex_t;
 extern int * cond_i;
 #endif
-
-#define n_net 2
-#define THREAD_NUM_POOL 4
 
 /*��Ÿ������*/
 typedef struct{
@@ -146,6 +146,8 @@ struct layer{
     //2020 0213 cheolsun threadbody function add
     #ifdef THREAD
         void (*forward_thread) (netlayer*);
+        //2020 0223 hojin gpu threadbody function add
+        void (*forward_gpu_thread) (netlayer*);
     #endif
     void (*backward)  (struct layer, struct network);
     void (*update)    (struct layer, update_args);

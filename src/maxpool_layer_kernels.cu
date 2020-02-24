@@ -95,6 +95,28 @@ extern "C" void forward_maxpool_layer_gpu(maxpool_layer layer, network net)
     forward_maxpool_layer_kernel<<<cuda_gridsize(n), BLOCK>>>(n, layer.h, layer.w, layer.c, layer.stride, layer.size, layer.pad, net.input_gpu, layer.output_gpu, layer.indexes_gpu);
     check_error(cudaPeekAtLastError());
 }
+#ifdef THREAD
+extern "C" void forward_maxpool_layer_gpu_thread(netlayer* input)
+{
+    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+
+    network net = input->net;
+    layer layer = input->layer;
+
+    int h = layer.out_h;
+    int w = layer.out_w;
+    int c = layer.c;
+
+    size_t n = h*w*c*layer.batch;
+
+    forward_maxpool_layer_kernel<<<cuda_gridsize(n), BLOCK>>>(n, layer.h, layer.w, layer.c, layer.stride, layer.size, layer.pad, net.input_gpu, layer.output_gpu, layer.indexes_gpu);
+    check_error(cudaPeekAtLastError());
+
+    cond_i[input->net.index_n] = 0;
+    pthread_cond_signal(&cond_t[input->net.index_n]);
+    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+}
+#endif
 
 extern "C" void backward_maxpool_layer_gpu(maxpool_layer layer, network net)
 {

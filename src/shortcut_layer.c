@@ -31,8 +31,12 @@ layer make_shortcut_layer(int batch, int index, int w, int h, int c, int w2, int
     #ifdef THREAD
     l.forward_thread = forward_shortcut_layer_thread;
     #endif
+
     #ifdef GPU
     l.forward_gpu = forward_shortcut_layer_gpu;
+    #ifdef THREAD
+    l.forward_gpu_thread = forward_shortcut_layer_gpu_thread;
+    #endif
     l.backward_gpu = backward_shortcut_layer_gpu;
 
     l.delta_gpu =  cuda_make_array(l.delta, l.outputs*batch);
@@ -97,6 +101,23 @@ void forward_shortcut_layer_gpu(const layer l, network net)
     shortcut_gpu(l.batch, l.w, l.h, l.c, net.layers[l.index].output_gpu, l.out_w, l.out_h, l.out_c, l.alpha, l.beta, l.output_gpu);
     activate_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation);
 }
+
+#ifdef THREAD
+void forward_shortcut_layer_gpu_thread(netlayer * input)
+{
+    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+    network net = input->net;
+    layer l = input->layer;
+
+    copy_gpu(l.outputs*l.batch, net.input_gpu, 1, l.output_gpu, 1);
+    shortcut_gpu(l.batch, l.w, l.h, l.c, net.layers[l.index].output_gpu, l.out_w, l.out_h, l.out_c, l.alpha, l.beta, l.output_gpu);
+    activate_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation);
+    
+    cond_i[input->net.index_n] = 0;
+    pthread_cond_signal(&cond_t[input->net.index_n]);
+    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+}
+#endif
 
 void backward_shortcut_layer_gpu(const layer l, network net)
 {

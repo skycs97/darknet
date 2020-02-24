@@ -84,6 +84,9 @@ layer make_connected_layer(int batch, int inputs, int outputs, ACTIVATION activa
 
 #ifdef GPU
     l.forward_gpu = forward_connected_layer_gpu;
+    #ifdef THREAD
+    l.forward_gpu_thread = forward_connected_layer_gpu_thread;
+    #endif
     l.backward_gpu = backward_connected_layer_gpu;
     l.update_gpu = update_connected_layer_gpu;
 
@@ -333,6 +336,36 @@ void forward_connected_layer_gpu(layer l, network net)
     }
     activate_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation);
 }
+
+#ifdef THREAD
+void forward_connected_layer_gpu_thread(netlayer * input){
+    
+    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+    network net = input->net;
+    layer l = input->layer;
+
+    fill_gpu(l.outputs*l.batch, 0, l.output_gpu, 1);
+
+    int m = l.batch;
+    int k = l.inputs;
+    int n = l.outputs;
+    float * a = net.input_gpu;
+    float * b = l.weights_gpu;
+    float * c = l.output_gpu;
+    gemm_gpu(0,1,m,n,k,1,a,k,b,k,1,c,n);
+
+    if (l.batch_normalize) {
+        forward_batchnorm_layer_gpu(l, net);
+    } else {
+        add_bias_gpu(l.output_gpu, l.biases_gpu, l.batch, l.outputs, 1);
+    }
+    activate_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation);
+
+    cond_i[input->net.index_n] = 0;
+    pthread_cond_signal(&cond_t[input->net.index_n]);
+    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+}
+#endif
 
 void backward_connected_layer_gpu(layer l, network net)
 {

@@ -45,6 +45,9 @@ maxpool_layer make_maxpool_layer(int batch, int h, int w, int c, int size, int s
     #endif
     #ifdef GPU
     l.forward_gpu = forward_maxpool_layer_gpu;layerput_size);
+    #ifdef THREAD
+    l.forward_gpu_thread = forward_maxpool_layer_gpu_thread;
+    #endif
     l.delta_gpu   = cuda_make_array(l.delta, output_size);
     #endif
     fprintf(stderr, "max          %d x %d / %d  %4d x%4d x%4d   ->  %4d x%4d x%4d\n", size, size, stride, w, h, c, l.out_w, l.out_h, l.out_c);

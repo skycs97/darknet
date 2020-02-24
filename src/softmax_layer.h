@@ -17,6 +17,9 @@ void forward_softmax_layer_thread(netlayer* input);
 #ifdef GPU
 void pull_softmax_layer_output(const softmax_layer l);
 void forward_softmax_layer_gpu(const softmax_layer l, network net);
+#ifdef THREAD
+void forward_softmax_layer_gpu_thread(netlayer* input);
+#endif
 void backward_softmax_layer_gpu(const softmax_layer l, network net);
 #endif
 

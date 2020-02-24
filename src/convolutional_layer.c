@@ -264,6 +264,9 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
 
 #ifdef GPU
     l.forward_gpu = forward_convolutional_layer_gpu;
+    #ifdef THREAD
+    l.forward_gpu_thread = forward_convolutional_layer_gpu_thread;
+    #endif
     l.backward_gpu = backward_convolutional_layer_gpu;
     l.update_gpu = update_convolutional_layer_gpu;
 
@@ -326,10 +329,8 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
     l.workspace_size = get_workspace_size(l);
     l.activation = activation;
 
-#if 0 // kmsjames 2020 0215 .. to avoid hon-jab..
-
     fprintf(stderr, "conv  %5d %2d x%2d /%2d  %4d x%4d x%4d   ->  %4d x%4d x%4d  %5.3f BFLOPs\n", n, size, size, stride, w, h, c, l.out_w, l.out_h, l.out_c, (2.0 * l.n * l.size*l.size*l.c/l.groups * l.out_h*l.out_w)/1000000000.);
-#endif
+
     return l;
 }
 
@@ -595,7 +596,6 @@ void backward_convolutional_layer(convolutional_layer l, network net)
         }
     }
 }
-
 void update_convolutional_layer(convolutional_layer l, update_args a)
 {
     float learning_rate = a.learning_rate*l.learning_rate_scale;

@@ -28,6 +28,11 @@ layer make_activation_layer(int batch, int inputs, ACTIVATION activation)
     l.backward = backward_activation_layer;
 #ifdef GPU
     l.forward_gpu = forward_activation_layer_gpu;
+
+    #ifdef THREAD
+    l.forward_gpu_thread = forward_activation_layer_gpu_thread;
+    #endif
+
     l.backward_gpu = backward_activation_layer_gpu;
 
     l.output_gpu = cuda_make_array(l.output, inputs*batch);
@@ -71,6 +76,21 @@ void forward_activation_layer_gpu(layer l, network net)
     copy_gpu(l.outputs*l.batch, net.input_gpu, 1, l.output_gpu, 1);
     activate_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation);
 }
+
+#ifdef THREAD
+void forward_activation_layer_gpu_thread(netlayer* input){
+    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+
+    network net= input->net;
+    layer l = input->layer;
+
+    copy_gpu(l.outputs*l.batch, net.input_gpu, 1, l.output_gpu, 1);
+    activate_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation);
+
+    pthread_cond_signal(&cond_t[input->net.index_n]);
+    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+}
+#endif
 
 void backward_activation_layer_gpu(layer l, network net)
 {

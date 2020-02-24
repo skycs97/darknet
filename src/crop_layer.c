@@ -42,6 +42,9 @@ crop_layer make_crop_layer(int batch, int h, int w, int c, int crop_height, int 
 
     #ifdef GPU
     l.forward_gpu = forward_crop_layer_gpu;
+    #ifdef THREAD
+    l.forward_gpu_thread = forward_crop_layer_gpu_thread;
+    #endif
     l.backward_gpu = backward_crop_layer_gpu;
     l.output_gpu = cuda_make_array(l.output, l.outputs*batch);
     l.rand_gpu   = cuda_make_array(0, l.batch*8);
@@ -104,7 +107,6 @@ void forward_crop_layer(const crop_layer l, network net)
         }
     }
 }
-
 #ifdef THREAD
 void forward_crop_layer_thread(netlayer * input)
 {

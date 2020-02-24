@@ -21,6 +21,9 @@ dropout_layer make_dropout_layer(int batch, int inputs, float probability)
     #endif
     #ifdef GPU
     l.forward_gpu = forward_dropout_layer_gpu;
+    #ifdef THREAD
+    l.forward_gpu_thread = forward_dropout_layer_gpu_thread;
+    #endif
     l.backward_gpu = backward_dropout_layer_gpu;
     l.rand_gpu = cuda_make_array(l.rand, inputs*batch);
     #endif

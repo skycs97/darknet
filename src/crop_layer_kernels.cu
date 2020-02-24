@@ -222,4 +222,57 @@ extern "C" void forward_crop_layer_gpu(crop_layer layer, network net)
        cvWaitKey(0);
        */
 }
+#ifdef THREAD
+extern "C" void forward_crop_layer_gpu_thread(netlayer* input)
+{
+    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+
+    network net = input->net;
+    layer layer = input->layer;
+
+    cuda_random(layer.rand_gpu, layer.batch*8);
+
+    float radians = layer.angle*3.14159265f/180.f;
+
+    float scale = 2;
+    float translate = -1;
+    if(layer.noadjust){
+        scale = 1;
+        translate = 0;
+    }
+
+    int size = layer.batch * layer.w * layer.h;
+
+    levels_image_kernel<<<cuda_gridsize(size), BLOCK>>>(net.input_gpu, layer.rand_gpu, layer.batch, layer.w, layer.h, net.train, layer.saturation, layer.exposure, translate, scale, layer.shift);
+    check_error(cudaPeekAtLastError());
+
+    size = layer.batch*layer.c*layer.out_w*layer.out_h;
+
+    forward_crop_layer_kernel<<<cuda_gridsize(size), BLOCK>>>(net.input_gpu, layer.rand_gpu, size, layer.c, layer.h, layer.w, layer.out_h, layer.out_w, net.train, layer.flip, radians, layer.output_gpu);
+    check_error(cudaPeekAtLastError());
+
+    cond_i[input->net.index_n] = 0;
+    pthread_cond_signal(&cond_t[input->net.index_n]);
+    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+
+/*
+       cuda_pull_array(layer.output_gpu, layer.output, size);
+       image im = float_to_image(layer.crop_width, layer.crop_height, layer.c, layer.output + 0*(size/layer.batch));
+       image im2 = float_to_image(layer.crop_width, layer.crop_height, layer.c, layer.output + 1*(size/layer.batch));
+       image im3 = float_to_image(layer.crop_width, layer.crop_height, layer.c, layer.output + 2*(size/layer.batch));
+
+       translate_image(im, -translate);
+       scale_image(im, 1/scale);
+       translate_image(im2, -translate);
+       scale_image(im2, 1/scale);
+       translate_image(im3, -translate);
+       scale_image(im3, 1/scale);
+       
+       show_image(im, "cropped");
+       show_image(im2, "cropped2");
+       show_image(im3, "cropped3");
+       cvWaitKey(0);
+       */
+}
+#endif
 

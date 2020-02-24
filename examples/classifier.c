@@ -610,6 +610,8 @@ void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *fi
     }
 }
 
+//hojin
+
 
 void* predict_classifier2(test * input){
 
@@ -644,8 +646,8 @@ void* predict_classifier2(test * input){
     free_network(net);
     free(input);
 
-    //kmsjames 2020 0215 to check thread mapping remained
-    //while(1);
+    //hojin
+    while(1);
 }
 
 void label_classifier(char *datacfg, char *filename, char *weightfile)

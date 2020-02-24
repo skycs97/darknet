@@ -28,8 +28,12 @@ softmax_layer make_softmax_layer(int batch, int inputs, int groups)
     #ifdef THREAD
     l.forward_thread = forward_softmax_layer_thread;
     #endif
+
     #ifdef GPU
     l.forward_gpu = forward_softmax_layer_gpu;
+    #ifdef THREAD
+    l.forward_gpu_thread = forward_softmax_layer_gpu_thread;
+    #endif
     l.backward_gpu = backward_softmax_layer_gpu;
 
     l.output_gpu = cuda_make_array(l.output, inputs*batch); 
@@ -129,6 +133,47 @@ void forward_softmax_layer_gpu(const softmax_layer l, network net)
         l.cost[0] = sum_array(l.loss, l.batch*l.inputs);
     }
 }
+
+#ifdef THREAD
+void forward_softmax_layer_gpu_thread(netlayer * input)
+{
+    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+    network net = input->net;
+    layer l = input->layer;
+
+    if(l.softmax_tree){
+        softmax_tree(net.input_gpu, 1, l.batch, l.inputs, l.temperature, l.output_gpu, *l.softmax_tree);
+        /*
+        int i;
+        int count = 0;
+        for (i = 0; i < l.softmax_tree->groups; ++i) {
+            int group_size = l.softmax_tree->group_size[i];
+            softmax_gpu(net.input_gpu + count, group_size, l.batch, l.inputs, 1, 0, 1, l.temperature, l.output_gpu + count);
+            count += group_size;
+        }
+        */
+    } else {
+        if(l.spatial){
+            softmax_gpu(net.input_gpu, l.c, l.batch*l.c, l.inputs/l.c, l.w*l.h, 1, l.w*l.h, 1, l.output_gpu);
+        }else{
+            softmax_gpu(net.input_gpu, l.inputs/l.groups, l.batch, l.inputs, l.groups, l.inputs/l.groups, 1, l.temperature, l.output_gpu);
+        }
+    }
+    if(net.truth && !l.noloss){
+        softmax_x_ent_gpu(l.batch*l.inputs, l.output_gpu, net.truth_gpu, l.delta_gpu, l.loss_gpu);
+        if(l.softmax_tree){
+            mask_gpu(l.batch*l.inputs, l.delta_gpu, SECRET_NUM, net.truth_gpu, 0);
+            mask_gpu(l.batch*l.inputs, l.loss_gpu, SECRET_NUM, net.truth_gpu, 0);
+        }
+        cuda_pull_array(l.loss_gpu, l.loss, l.batch*l.inputs);
+        l.cost[0] = sum_array(l.loss, l.batch*l.inputs);
+    }
+
+    cond_i[input->net.index_n] = 0;
+    pthread_cond_signal(&cond_t[input->net.index_n]);
+    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+}
+#endif
 
 void backward_softmax_layer_gpu(const softmax_layer layer, network net)
 {
