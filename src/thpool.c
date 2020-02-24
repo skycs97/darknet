@@ -156,12 +156,18 @@ struct thpool_* thpool_init(int num_threads){
 	
 	for (n=0; n<num_threads; n++){
 		thread_init(thpool_p, &thpool_p->threads[n], n);
+		if(n == (num_threads-1)){
+			thpool_p->threads[n]->flag = 1;
+		}
+		else{
+			thpool_p->threads[n]->flag = 0;
+		}
+		
  
-		/* thread CPU pinning */
+		/* kmsjames 2020 0215 bug fix for pinning each thread on a specified CPU */
 		CPU_ZERO(&cpuset);
-		for(int j=0; j<8; j++) CPU_SET(j, &cpuset);	
+		CPU_SET(n, &cpuset); //only this thread has the affinity for the 'n'-th CPU	
 		pthread_setaffinity_np(thpool_p->threads[n]->pthread, sizeof(cpu_set_t), &cpuset);
-		//printf("\n cpuset value = %d\n",  (int)cpuset);
 
 #if THPOOL_DEBUG
 			printf("THPOOL_DEBUG: Created thread %d in pool \n", n);
@@ -367,6 +373,7 @@ static void* thread_do(struct thread* thread_p){
 			if (job_p) {
 				func_buff = job_p->function;
 				arg_buff  = job_p->arg;
+				((th_arg*)arg_buff)->flag = thread_p->flag;
 				func_buff(arg_buff);
 				free(job_p);
 			}

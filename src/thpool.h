@@ -1,6 +1,5 @@
 #ifndef _THPOOL_
 #define _THPOOL_
-
 #ifdef __cplusplus
    extern "C" {
 #endif
@@ -202,11 +201,16 @@ typedef struct jobqueue{
 } jobqueue;
 
 
+
+#define CPU_FLAG 0
+#define GPU_FLAG 1
+
 /* Thread */
 typedef struct thread{
 	int       id;                        /* friendly id               */
 	pthread_t pthread;                   /* pointer to actual thread  */
 	struct thpool_* thpool_p;            /* access to thpool          */
+	int flag
 } thread;
 
 
@@ -220,6 +224,10 @@ typedef struct thpool_{
 	jobqueue  jobqueue;                  /* job queue                 */
 } thpool_;
 
+typedef struct th_arg{
+	void* arg;
+	int flag;
+}th_arg;
 
 #endif
 

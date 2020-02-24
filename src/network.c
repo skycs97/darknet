@@ -207,12 +207,76 @@ network *make_network(int n)
     net->cost = calloc(1, sizeof(float));
     return net;
 }
+#ifdef THREAD
+void forward_function(th_arg * input){
+    netlayer * nl = (netlayer*)input->arg;
+    
+    if(input->flag == 1){
 
+        cuda_push_array(nl->net.input_gpu, nl->net.input, nl->net.inputs*nl->net.batch);
+        if(nl->net.truth){
+            cuda_push_array(nl->net.truth_gpu, nl->net.truth, nl->net.truths*nl->net.batch);
+        }
+        nl->layer.forward_gpu_thread(nl);
+        cuda_pull_array(nl->net.output_gpu, nl->net.output, nl->net.outputs * nl->net.batch);
+    }
+    else if(input->flag == 0){
+        nl->layer.forward_thread(input->arg);
+    }
+}
+#endif
 //2020 0213 cheolsun 네트워크 상태 변수 추가 및 network 쓰레드화 
 void forward_network(network *netp)
 {
 #ifdef GPU
-    #ifndef THREAD
+    #ifdef THREAD
+    network net = *netp;
+    int i;
+    int lastFlag = 0;
+    
+    cuda_set_device(net.gpu_index);
+    
+
+    for(i = 0; i < net.n; ++i){
+        pthread_mutex_lock(&mutex_t[net.index_n]);
+
+        cond_i[net.index_n] = 1;
+        net.index = i;
+        layer l = net.layers[i];
+        if(l.delta){
+            fill_cpu(l.outputs * l.batch, 0, l.delta, 1);
+        }
+        
+        netlayer nl;
+
+        nl.layer = l;
+        nl.net = net;
+        
+        th_arg input;
+        input.arg = &nl;
+        input.flag = 0;
+
+        thpool_add_work(thpool, forward_function, &input);
+        while(cond_i[net.index_n] == 1){
+            pthread_cond_wait(&cond_t[net.index_n], &mutex_t[net.index_n]);
+        }
+
+        net.input = l.output;
+        net.input_gpu = l.output_gpu;
+
+        if(l.truth) {
+            net.truth = l.output;
+            net.truth_gpu = l.output_gpu;
+        }
+        if(input.flag == 1){
+            
+        }
+        pthread_mutex_unlock(&mutex_t[net.index_n]);
+    }
+    pull_network_output(netp);
+
+
+    #else
     if(netp->gpu_index >= 0){
         forward_network_gpu(netp);   
         return;
@@ -221,7 +285,7 @@ void forward_network(network *netp)
 #endif
     network net = *netp;
     int i;
-    #if THREAD_LAYER_MODE
+    #ifdef THREAD
         for(i = 0; i < net.n; ++i){
 
             pthread_mutex_lock(&mutex_t[net.index_n]);
@@ -827,38 +891,7 @@ void forward_network_gpu(network *netp)
     }
 
     int i;
-    //2020 0223 hojin ADD GPU THREAD_LAYER_MODE 
-    #if THREAD_LAYER_MODE
-        for(i = 0; i < net.n; ++i){
-
-            pthread_mutex_lock(&mutex_t[net.index_n]);
-
-            cond_i[net.index_n] = 1;
-            net.index = i;
-            layer l = net.layers[i];
-            
-            if(l.delta_gpu){
-                fill_gpu(l.outputs * l.batch, 0, l.delta_gpu, 1);
-            }
-            
-            netlayer input;
-            input.layer = l;
-            input.net = net;
-
-            thpool_add_work(thpool, l.forward_gpu_thread, &input);
-            while(cond_i[net.index_n] == 1){
-                pthread_cond_wait(&cond_t[net.index_n], &mutex_t[net.index_n]);
-            }
-
-
-            net.input = l.output;
-            if(l.truth) {
-                net.truth = l.output;
-            }
-            pthread_mutex_unlock(&mutex_t[net.index_n]);
-
-        }
-    #else
+   
     for(i = 0; i < net.n; ++i){
         net.index = i;
         layer l = net.layers[i];
@@ -873,7 +906,6 @@ void forward_network_gpu(network *netp)
             net.truth = l.output;
         }
     }
-    #endif
     pull_network_output(netp);
     //calc_network_cost(netp);
 }
