@@ -212,10 +212,12 @@ network *make_network(int n)
 void forward_network(network *netp)
 {
 #ifdef GPU
+    #ifndef THREAD
     if(netp->gpu_index >= 0){
         forward_network_gpu(netp);   
         return;
     }
+    #endif
 #endif
     network net = *netp;
     int i;
@@ -255,7 +257,6 @@ void forward_network(network *netp)
             if(l.delta){
                 fill_cpu(l.outputs * l.batch, 0, l.delta, 1);
             }
-            fprintf(stderr, "%d\n", getpid());
             
             l.forward(l, net);
             net.input = l.output;
