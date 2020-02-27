@@ -210,7 +210,7 @@ typedef struct thread{
 	int       id;                        /* friendly id               */
 	pthread_t pthread;                   /* pointer to actual thread  */
 	struct thpool_* thpool_p;            /* access to thpool          */
-	int flag
+	int flag;
 } thread;
 
 
