@@ -207,6 +207,7 @@ network *make_network(int n)
     net->cost = calloc(1, sizeof(float));
     return net;
 }
+#ifdef GPU
 #ifdef THREAD
 void forward_function(th_arg * input){
     netlayer * nl = (netlayer*)input->arg;
@@ -224,6 +225,7 @@ void forward_function(th_arg * input){
         nl->layer.forward_thread(input->arg);
     }
 }
+#endif
 #endif
 //2020 0213 cheolsun 네트워크 상태 변수 추가 및 network 쓰레드화 
 void forward_network(network *netp)

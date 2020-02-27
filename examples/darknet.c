@@ -405,6 +405,7 @@ void choiceNetwork()
 {
     
 }
+
 threadpool thpool;
 //각 네트워크의 조건변수, mutex변수, wait를 위한 변수 선언 헤더에 extern변수로 지정
 pthread_cond_t* cond_t;
@@ -448,6 +449,7 @@ int main()
 
     network *denseNetwork[n_net];
     network *resNetwork[n_net];
+
 #ifdef THREAD
     //변수 동적할당
     cond_t = (pthread_cond_t*)malloc(sizeof(pthread_cond_t) * n_net*2);
@@ -455,7 +457,7 @@ int main()
     cond_i = (int*)malloc(sizeof(int) * n_net * 2);
 #endif
 
-    for(int i=0; i< n_net*2; i++){
+    for(int i=0; i<4; i++){
         pthread_cond_init(&cond_t[i], NULL);
         pthread_mutex_init(&mutex_t[i], NULL);
         cond_i[i] = 0;
