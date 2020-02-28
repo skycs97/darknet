@@ -614,10 +614,11 @@ void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *fi
 
 
 void* predict_classifier2(test * input){
+    image im = load_image_color((char *)input->input_path, 0, 0);
+    network *net = input->net;
 
     //hoijn ADD FOR
     for(int i=0;i<n_loop;i++){
-        network *net = input->net;
         set_batch_network(net, 1);
         srand(2222222);
 
@@ -628,7 +629,6 @@ void* predict_classifier2(test * input){
         double time = what_time_is_it_now();
         int *indexes = calloc(top, sizeof(int));
 
-        image im = load_image_color((char *)input->input_path, 0, 0);
 
         image r = letterbox_image(im, net->w, net->h);
         float *X = r.data;
@@ -647,10 +647,10 @@ void* predict_classifier2(test * input){
         }
         if (r.data != im.data)
             free_image(r);
-        free_image(im);
-        free_network(net);
-        free(input);
     }
+    free_image(im);
+    free_network(net);
+    free(input);
     //hojin
     //while(1);
 }

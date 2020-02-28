@@ -233,6 +233,7 @@ void forward_function(th_arg * input){
         if(nl->layer.delta){
             fill_cpu(nl->layer.outputs * nl->layer.batch, 0, nl->layer.delta, 1);
         }
+        fprintf(stderr, "cpuforward_start");
         nl->layer.forward_thread(input->arg);
         fprintf(stderr, "cpuend\n");
     }
