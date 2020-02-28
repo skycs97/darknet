@@ -457,7 +457,7 @@ int main()
     cond_i = (int*)malloc(sizeof(int) * n_net * 2);
 #endif
 
-    for(int i=0; i<4; i++){
+    for(int i=0; i<n_net*2; i++){
         pthread_cond_init(&cond_t[i], NULL);
         pthread_mutex_init(&mutex_t[i], NULL);
         cond_i[i] = 0;

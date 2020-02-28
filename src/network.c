@@ -271,19 +271,21 @@ void forward_network(network *netp)
             pthread_cond_wait(&cond_t[net.index_n], &mutex_t[net.index_n]);
         }
 
-        net.input = l.output;
-        net.input_gpu = l.output_gpu;
+        nl.net.input = nl.layer.output;
+        nl.net.input_gpu = nl.layer.output_gpu;
 
-        if(l.truth) {
-            net.truth = l.output;
-            net.truth_gpu = l.output_gpu;
+        if(nl.layer.truth) {
+            nl.net.truth = nl.layer.output;
+            nl.net.truth_gpu = nl.layer.output_gpu;
         }
         if(input.flag == 1){
             
         }
+        lastFlag = input.flag;
         pthread_mutex_unlock(&mutex_t[net.index_n]);
     }
-    pull_network_output(netp);
+    if(lastFlag == 1)
+        pull_network_output(netp);
 
 
     #else
