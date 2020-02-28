@@ -211,14 +211,16 @@ network *make_network(int n)
 #ifdef THREAD
 void forward_function(th_arg * input){
     netlayer * nl = (netlayer*)input->arg;
+    pthread_mutex_lock(&mutex_t[nl->net.index_n]);
     
     if(input->flag == 1){
-        if(nl->layer.delta_gpu){
-            fill_gpu(nl->layer.outputs * nl->layer.batch, 0, nl->layer.delta_gpu, 1);
-        }
+        
         cuda_push_array(nl->net.input_gpu, nl->net.input, nl->net.inputs*nl->net.batch);
         if(nl->net.truth){
             cuda_push_array(nl->net.truth_gpu, nl->net.truth, nl->net.truths*nl->net.batch);
+        }
+        if(nl->layer.delta_gpu){
+            fill_gpu(nl->layer.outputs * nl->layer.batch, 0, nl->layer.delta_gpu, 1);
         }
         nl->layer.forward_gpu_thread(nl);
         cuda_pull_array(nl->layer.output_gpu, nl->layer.output, nl->layer.outputs * nl->net.batch);
@@ -229,6 +231,10 @@ void forward_function(th_arg * input){
         }
         nl->layer.forward_thread(input->arg);
     }
+    cond_i[nl->net.index_n] = 0;
+    pthread_cond_signal(&cond_t[nl->net.index_n]);
+    pthread_mutex_unlock(&mutex_t[nl->net.index_n]);
+
 }
 #endif
 #endif

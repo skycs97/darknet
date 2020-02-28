@@ -118,7 +118,7 @@ void forward_maxpool_layer(const maxpool_layer l, network net)
 #ifdef THREAD
 void forward_maxpool_layer_thread(netlayer* input)
 {
-    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+     
 
     network net = input->net;
     layer l = input->layer;
@@ -156,10 +156,10 @@ void forward_maxpool_layer_thread(netlayer* input)
             }
         }
     }
-    cond_i[input->net.index_n] = 0;
+     
 
-    pthread_cond_signal(&cond_t[input->net.index_n]);
-    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+     
+     
 }
 #endif
 

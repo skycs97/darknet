@@ -23,7 +23,8 @@ extern "C" {
 #endif
 
 #define SECRET_NUM -1234
-
+#define GPU
+#define THREAD
 extern int gpu_index;
 extern threadpool thpool;
 #define THREAD_NUM_POOL 8

@@ -95,7 +95,7 @@ void forward_route_layer(const route_layer l, network net)
 #ifdef THREAD
 void forward_route_layer_thread(netlayer * input)
 {
-    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+     
     network net = input->net;
     layer l = input->layer;
     int i, j;
@@ -109,9 +109,9 @@ void forward_route_layer_thread(netlayer * input)
         }
         offset += input_size;
     }
-    cond_i[input->net.index_n] = 0;
-    pthread_cond_signal(&cond_t[input->net.index_n]);
-    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+     
+     
+     
 }
 #endif
 
@@ -149,7 +149,7 @@ void forward_route_layer_gpu(const route_layer l, network net)
 #ifdef THREAD
 void forward_route_layer_gpu_thread(netlayer * input)
 {
-    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+     
     network net = input->net;
     layer l = input->layer;
 
@@ -165,9 +165,9 @@ void forward_route_layer_gpu_thread(netlayer * input)
         offset += input_size;
     }
 
-    cond_i[input->net.index_n] = 0;
-    pthread_cond_signal(&cond_t[input->net.index_n]);
-    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+     
+     
+     
 }
 #endif
 

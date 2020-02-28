@@ -55,7 +55,7 @@ void forward_dropout_layer(dropout_layer l, network net)
 #ifdef THREAD
 void forward_dropout_layer_thread(netlayer * input)
 {
-    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+     
     network net = input->net;
     layer l = input->layer;
     int i;
@@ -66,9 +66,9 @@ void forward_dropout_layer_thread(netlayer * input)
         if(r < l.probability) net.input[i] = 0;
         else net.input[i] *= l.scale;
     }
-    cond_i[input->net.index_n] = 0;
-    pthread_cond_signal(&cond_t[input->net.index_n]);
-    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+     
+     
+     
 }
 #endif
 

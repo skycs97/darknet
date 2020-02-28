@@ -136,7 +136,7 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network net)
 #ifdef THREAD
 extern "C" void forward_convolutional_layer_gpu_thread(netlayer* input)
 {
-    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+     
 
     network net = input->net;
     layer l = input->layer;
@@ -202,9 +202,9 @@ extern "C" void forward_convolutional_layer_gpu_thread(netlayer* input)
     //if(l.dot > 0) dot_error_gpu(l);
     if(l.binary || l.xnor) swap_binary(&l);
 
-    cond_i[input->net.index_n] = 0;
-    pthread_cond_signal(&cond_t[input->net.index_n]);
-    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+     
+     
+     
 }
 #endif
 

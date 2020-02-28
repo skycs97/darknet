@@ -34,7 +34,7 @@ void forward_dropout_layer_gpu(dropout_layer layer, network net)
 #ifdef THREAD
 void forward_dropout_layer_gpu_thread(netlayer* input)
 {
-    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+     
 
     network net = input->net;
     layer layer = input->layer;
@@ -53,9 +53,9 @@ void forward_dropout_layer_gpu_thread(netlayer* input)
     yoloswag420blazeit360noscope<<<cuda_gridsize(size), BLOCK>>>(net.input_gpu, size, layer.rand_gpu, layer.probability, layer.scale);
     check_error(cudaPeekAtLastError());
 
-    cond_i[input->net.index_n] = 0;
-    pthread_cond_signal(&cond_t[input->net.index_n]);
-    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+     
+     
+     
 }
 #endif
 

@@ -493,7 +493,7 @@ void forward_convolutional_layer(convolutional_layer l, network net)
 
 #ifdef THREAD
 void forward_convolutional_layer_thread(netlayer * input){
-    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+     
 
     network net = input->net;
     layer l = input->layer;
@@ -538,11 +538,11 @@ void forward_convolutional_layer_thread(netlayer * input){
     if(l.binary || l.xnor) swap_binary(&l);
 
     
-     //pthread_mutex_unlock(&mutex_t[input->net.index_n]);
-     //pthread_mutex_lock(&mutex_t[input->net.index_n]);
-    cond_i[input->net.index_n] = 0;
-    pthread_cond_signal(&cond_t[input->net.index_n]);
-    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+     // 
+     // 
+     
+     
+     
 }
 #endif
 

@@ -65,7 +65,7 @@ void forward_softmax_layer(const softmax_layer l, network net)
 #ifdef THREAD
 void forward_softmax_layer_thread(netlayer * input)
 {
-    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+     
     network net = input->net;
     layer l = input->layer;
     if(l.softmax_tree){
@@ -84,9 +84,9 @@ void forward_softmax_layer_thread(netlayer * input)
         softmax_x_ent_cpu(l.batch*l.inputs, l.output, net.truth, l.delta, l.loss);
         l.cost[0] = sum_array(l.loss, l.batch*l.inputs);
     }
-    cond_i[input->net.index_n] = 0;
-    pthread_cond_signal(&cond_t[input->net.index_n]);
-    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+     
+     
+     
 }
 #endif
 
@@ -137,7 +137,7 @@ void forward_softmax_layer_gpu(const softmax_layer l, network net)
 #ifdef THREAD
 void forward_softmax_layer_gpu_thread(netlayer * input)
 {
-    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+     
     network net = input->net;
     layer l = input->layer;
 
@@ -169,9 +169,9 @@ void forward_softmax_layer_gpu_thread(netlayer * input)
         l.cost[0] = sum_array(l.loss, l.batch*l.inputs);
     }
 
-    cond_i[input->net.index_n] = 0;
-    pthread_cond_signal(&cond_t[input->net.index_n]);
-    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+     
+     
+     
 }
 #endif
 

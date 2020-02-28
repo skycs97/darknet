@@ -225,7 +225,7 @@ extern "C" void forward_crop_layer_gpu(crop_layer layer, network net)
 #ifdef THREAD
 extern "C" void forward_crop_layer_gpu_thread(netlayer* input)
 {
-    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+     
 
     network net = input->net;
     layer layer = input->layer;
@@ -251,9 +251,9 @@ extern "C" void forward_crop_layer_gpu_thread(netlayer* input)
     forward_crop_layer_kernel<<<cuda_gridsize(size), BLOCK>>>(net.input_gpu, layer.rand_gpu, size, layer.c, layer.h, layer.w, layer.out_h, layer.out_w, net.train, layer.flip, radians, layer.output_gpu);
     check_error(cudaPeekAtLastError());
 
-    cond_i[input->net.index_n] = 0;
-    pthread_cond_signal(&cond_t[input->net.index_n]);
-    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+     
+     
+     
 
 /*
        cuda_pull_array(layer.output_gpu, layer.output, size);

@@ -174,7 +174,7 @@ void forward_connected_layer(layer l, network net)
 
 #ifdef THREAD
 void forward_connected_layer_thread(netlayer * input){
-    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+     
     network net = input->net;
     layer l = input->layer;
 
@@ -192,9 +192,9 @@ void forward_connected_layer_thread(netlayer * input){
         add_bias(l.output, l.biases, l.batch, l.outputs, 1);
     }
     activate_array(l.output, l.outputs*l.batch, l.activation);
-    cond_i[input->net.index_n] = 0;
-    pthread_cond_signal(&cond_t[input->net.index_n]);
-    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+     
+     
+     
 }
 #endif
 
@@ -340,7 +340,7 @@ void forward_connected_layer_gpu(layer l, network net)
 #ifdef THREAD
 void forward_connected_layer_gpu_thread(netlayer * input){
     
-    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+     
     network net = input->net;
     layer l = input->layer;
 
@@ -361,9 +361,9 @@ void forward_connected_layer_gpu_thread(netlayer * input){
     }
     activate_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation);
 
-    cond_i[input->net.index_n] = 0;
-    pthread_cond_signal(&cond_t[input->net.index_n]);
-    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+     
+     
+     
 }
 #endif
 

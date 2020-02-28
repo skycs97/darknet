@@ -53,7 +53,7 @@ extern "C" void forward_avgpool_layer_gpu(avgpool_layer layer, network net)
 #ifdef THREAD
 extern "C" void forward_avgpool_layer_gpu_thread(netlayer* input)
 {
-    pthread_mutex_lock(&mutex_t[input->net.index_n]); 
+      
 
     network net = input->net;
     layer layer = input->layer;
@@ -63,9 +63,9 @@ extern "C" void forward_avgpool_layer_gpu_thread(netlayer* input)
     forward_avgpool_layer_kernel<<<cuda_gridsize(n), BLOCK>>>(n, layer.w, layer.h, layer.c, net.input_gpu, layer.output_gpu);
     check_error(cudaPeekAtLastError());
 
-    cond_i[input->net.index_n] = 0;
-    pthread_cond_signal(&cond_t[input->net.index_n]);
-    pthread_mutex_unlock(&mutex_t[input->net.index_n]);
+     
+     
+     
 }
 #endif
 
