@@ -212,6 +212,7 @@ network *make_network(int n)
 void forward_function(th_arg * input){
     netlayer * nl = input->arg;
     pthread_mutex_lock(&mutex_t[nl->net.index_n]);
+    input->flag = 0;
 
     if(input->flag == 1){
         fprintf(stderr, "gpustart\n");
@@ -275,11 +276,11 @@ void forward_network(network *netp)
         }
 
         net.input = l.output;
-        net.input_gpu = nl.layer.output_gpu;
+        //net.input_gpu = nl.layer.output_gpu;
 
         if(l.truth) {
             net.truth = l.output;
-            net.truth_gpu = l.output_gpu;
+            //net.truth_gpu = l.output_gpu;
         }
         if(input.flag == 1){
             
