@@ -275,11 +275,11 @@ void forward_network(network *netp)
         }
 
         net.input = l.output;
-        input_gpu = nl.layer.output_gpu;
+        net.input_gpu = nl.layer.output_gpu;
 
         if(l.truth) {
             net.truth = l.output;
-            truth_gpu = l.output_gpu;
+            net.truth_gpu = l.output_gpu;
         }
         if(input.flag == 1){
             
