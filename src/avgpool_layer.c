@@ -26,7 +26,7 @@ avgpool_layer make_avgpool_layer(int batch, int w, int h, int c)
     #endif
     
     #ifdef GPU
-    l.forward_gpu = forward_avgpool_layer_gpu_thread;
+    l.forward_gpu = forward_avgpool_layer_gpu;
     #ifdef THREAD
     l.forward_gpu_thread = forward_avgpool_layer_gpu_thread;
     #endif
