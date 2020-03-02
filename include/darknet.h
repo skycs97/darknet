@@ -524,6 +524,7 @@ typedef struct network{
     float *truth_gpu;
     float *delta_gpu;
     float *output_gpu;
+    float* workspace_gpu;
 #endif
 
     //pthread_cond_t network_cond;

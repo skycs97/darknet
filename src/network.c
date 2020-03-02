@@ -207,7 +207,7 @@ network *make_network(int n)
     net->cost = calloc(1, sizeof(float));
     return net;
 }
-#ifndef GPU
+#ifdef GPU
 #ifdef THREAD
 void forward_function(th_arg * input){
     netlayer * nl = input->arg;
@@ -225,6 +225,7 @@ void forward_function(th_arg * input){
         }
         nl->layer.forward_gpu_thread(nl);
         cuda_pull_array(nl->layer.output_gpu, nl->layer.output, nl->layer.outputs * nl->net.batch);
+        cuda_pull_array(nl->net.truth_gpu, nl->net.truth, nl->net.truths*nl->net.batch);
         fprintf(stderr, "gpuend\n");*/
 
     }
@@ -245,7 +246,7 @@ void forward_function(th_arg * input){
 //2020 0213 cheolsun 네트워크 상태 변수 추가 및 network 쓰레드화 
 void forward_network(network *netp)
 {
-#ifndef GPU
+#ifdef GPU
     #ifdef THREAD
     network net = *netp;
     int i;

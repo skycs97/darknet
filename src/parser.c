@@ -876,7 +876,11 @@ network *parse_network_cfg(char *filename)
 #endif
     if(workspace_size){
         //printf("%ld\n", workspace_size);
-#ifdef GPU
+#ifdef THREAD && GPU
+    net->workspace_gpu = cuda_make_array(0, (workspace_size-1)/sizeof(float)+1);
+    net->workspace = calloc(1, workspace_size);
+
+#elif GPU
         if(gpu_index >= 0){
             net->workspace = cuda_make_array(0, (workspace_size-1)/sizeof(float)+1);
         }else {

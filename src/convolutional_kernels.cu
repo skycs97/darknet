@@ -164,7 +164,7 @@ extern "C" void forward_convolutional_layer_gpu_thread(netlayer* input)
                 l.weights_gpu,
                 l.convDesc,
                 l.fw_algo,
-                net.workspace,
+                net.workspace_gpu,
                 l.workspace_size,
                 &one,
                 l.dstTensorDesc,
@@ -178,7 +178,7 @@ extern "C" void forward_convolutional_layer_gpu_thread(netlayer* input)
     for(i = 0; i < l.batch; ++i){
         for(j = 0; j < l.groups; ++j){
             float *a = l.weights_gpu + j*l.nweights/l.groups;
-            float *b = net.workspace;
+            float *b = net.workspace_gpu;
             float *c = l.output_gpu + (i*l.groups + j)*n*m;
             float *im = net.input_gpu + (i*l.groups + j)*l.c/l.groups*l.h*l.w;
 
