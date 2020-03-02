@@ -843,7 +843,6 @@ typedef struct _test{
     char *netName;
     char *input_path;
 }test;
-
 typedef struct _netlayer{
     network  net;
     layer  layer;
