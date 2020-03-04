@@ -455,13 +455,14 @@ int main()
     cond_t = (pthread_cond_t*)malloc(sizeof(pthread_cond_t) * n_net*2);
     mutex_t = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t) * n_net*2);
     cond_i = (int*)malloc(sizeof(int) * n_net * 2);
-#endif
+
 
     for(int i=0; i<n_net*2; i++){
         pthread_cond_init(&cond_t[i], NULL);
         pthread_mutex_init(&mutex_t[i], NULL);
         cond_i[i] = 0;
     }
+#endif
 
     for(unsigned int k=0; k<n_net; k++){
         denseNetwork[k] = (network *)load_network("cfg/densenet201.cfg", "densenet201.weights",0);
@@ -542,7 +543,7 @@ int main()
         pthread_join(networkArray_des[i], NULL);
         pthread_join(networkArray_res[i], NULL);
     } 
-#ifdef THREAD
+#if 0
     //kmsjames 2020 0215
     for(i=0; i<THREAD_NUM_POOL;i++)
 	    pthread_join(thpool->threads[i]->pthread, NULL);
