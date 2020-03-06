@@ -511,6 +511,8 @@ int main()
     //     pthread_create(&networkArray[count], NULL,predict_classifier2, input);
     //     ++count;
     // }
+    // 
+    
     for(int i=0; i<n_net; i++){
         net_input_des[i] = (test*)malloc(sizeof(test));
         net_input_des[i]->net = denseNetwork[i];
@@ -524,7 +526,7 @@ int main()
             exit(0);
         }
     }
-
+/*
     for(int i=0; i<n_net; i++){
         net_input_res[i] = (test*)malloc(sizeof(test));
         net_input_res[i]->net = resNetwork[i];
@@ -538,7 +540,7 @@ int main()
            exit(0);
           }
     }
-
+*/
     for(int i=0; i<n_net; i++){
         pthread_join(networkArray_des[i], NULL);
         pthread_join(networkArray_res[i], NULL);
