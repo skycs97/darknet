@@ -4,8 +4,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-//#define n_net 4
-
 extern void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *filename, int top);
 extern void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, char *outfile, int fullscreen);
 extern void run_yolo(int argc, char **argv);
@@ -441,8 +439,8 @@ int main()
 #endif
 
     //char** vgg = {"darknet", "classfier", "predict", "cfg/imagenet1k.data", "cfg/","", "data/eagle.jpg"};
-    char** densenet = {"darknet", "classfier", "predict", "cfg/imagenet1k.data", "cfg/", "", "data/eagle.jpg"};
-    char** resnet = {"darknet", "classfier", "predict", "cfg/imagenet1k.data", "cfg/", "", "data/eagle.jpg"};
+    //char** densenet = {"darknet", "classfier", "predict", "cfg/imagenet1k.data", "cfg/", "", "data/eagle.jpg"};
+    //char** resnet = {"darknet", "classfier", "predict", "cfg/imagenet1k.data", "cfg/", "", "data/eagle.jpg"};
 
     char * vggName = "VGG";
     char * denseName = "Dense";
@@ -522,7 +520,7 @@ int main()
         net_input_des[i]->netName = denseName;
 
 	    printf(" It's turn for des i = %d\n",i);
-        if(pthread_create(&networkArray_des[i], NULL, predict_classifier2, net_input_des[i])<0){
+        if(pthread_create(&networkArray_des[i], NULL,(void *)predict_classifier2, net_input_des[i])<0){
             perror("thread error");
             exit(0);
         }
@@ -536,7 +534,7 @@ int main()
         net_input_res[i]->netName = resName;
 
 	    printf(" It's turn for res i = %d\n",i);
-      	if(pthread_create(&networkArray_res[i], NULL, predict_classifier2,net_input_res[i])<0){
+      	if(pthread_create(&networkArray_res[i], NULL, (void*)predict_classifier2,net_input_res[i])<0){
            perror("thread error");
            exit(0);
           }

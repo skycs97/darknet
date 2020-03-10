@@ -227,7 +227,7 @@ typedef struct thpool_{
 typedef struct _netlayer netlayer;
 
 typedef struct th_arg{
-	netlayer* arg;
+	void* arg;
 	int flag;
 }th_arg;
 
