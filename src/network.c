@@ -207,41 +207,39 @@ network *make_network(int n)
     net->cost = calloc(1, sizeof(float));
     return net;
 }
-#ifdef GPU
+
 #ifdef THREAD
 void forward_function(th_arg * input){
-    netlayer * nl = (netlayer*)input->arg;
+    netlayer * nl = input->arg;
     pthread_mutex_lock(&mutex_t[nl->net.index_n]);
-    
-    #ifndef GPU
-    input->flag = 0;
-    #endif
-
+	//input->flag == 1;
+#ifdef GPU
     if(input->flag == 1){
-        cuda_push_array(nl->net.input_gpu, nl->net.input, nl->net.inputs*nl->net.batch);
-        if(nl->net.truth){
-            cuda_push_array(nl->net.truth_gpu, nl->net.truth, nl->net.truths*nl->net.batch);
-        }
+	//fprintf(stderr, "gpu\n");
+        //cuda_push_array(nl->net.input_gpu, nl->net.input, ((nl->net).inputs)*((nl->net).batch));
+       
         if(nl->layer.delta_gpu){
             fill_gpu(nl->layer.outputs * nl->layer.batch, 0, nl->layer.delta_gpu, 1);
         }
         nl->layer.forward_gpu_thread(nl);
-        cuda_pull_array(nl->layer.output_gpu, nl->layer.output, nl->layer.outputs * nl->net.batch);
-
+	cuda_pull_array(nl->layer.output_gpu, nl->layer.output, nl->layer.outputs * nl->layer.batch);
     }
     else if(input->flag == 0){
-
+#endif
+        //cuda_push_array(nl->net.input_gpu, nl->net.input, ((nl->net).inputs)*((nl->net).batch));
+	//fprintf(stderr, "cpu\n");
         if(nl->layer.delta){
             fill_cpu(nl->layer.outputs * nl->layer.batch, 0, nl->layer.delta, 1);
         }
         nl->layer.forward_thread(nl);
+#ifdef GPU
     }
+#endif
     cond_i[nl->net.index_n] = 0;
     pthread_cond_signal(&cond_t[nl->net.index_n]);
     pthread_mutex_unlock(&mutex_t[nl->net.index_n]);
 
 }
-#endif
 #endif
 //2020 0213 cheolsun 네트워크 상태 변수 추가 및 network 쓰레드화 
 void forward_network(network *netp)
@@ -251,13 +249,17 @@ void forward_network(network *netp)
     network net = *netp;
     int i;
     int lastFlag = 0;
-    
     cuda_set_device(net.gpu_index);
+
+        if(net.truth){
+            cuda_push_array(net.truth_gpu, net.truth, net.truths*net.batch);
+        }
+        
     
 
     for(i = 0; i < net.n; ++i){
         pthread_mutex_lock(&mutex_t[net.index_n]);
-
+	cuda_push_array(net.input_gpu, net.input, net.inputs*net.batch);
         cond_i[net.index_n] = 1;
         net.index = i;
         layer l = net.layers[i];
@@ -275,22 +277,23 @@ void forward_network(network *netp)
         while(cond_i[net.index_n] == 1){
             pthread_cond_wait(&cond_t[net.index_n], &mutex_t[net.index_n]);
         }
+	lastFlag = input.flag;
+	
+	net.input = l.output;
+	net.input_gpu = l.output_gpu;
+	net.inputs = l.outputs;
 
-        net.input = l.output;
-        //net.input_gpu = nl.layer.output_gpu;
-
+	
         if(l.truth) {
-            net.truth = l.output;
-            //net.truth_gpu = l.output_gpu;
+            //net.truth = l.output;
+	    //net.truth_gpu = l.output_gpu;
         }
-        if(input.flag == 1){
-            
-        }
-        lastFlag = input.flag;
+        
+        
         pthread_mutex_unlock(&mutex_t[net.index_n]);
     }
-   if(lastFlag == 1)
-       pull_network_output(netp);
+	//if(lastFlag == 1)
+	//	pull_network_output(netp);
 
 
     #else
@@ -914,6 +917,7 @@ void forward_network_gpu(network *netp)
     for(i = 0; i < net.n; ++i){
         net.index = i;
         layer l = net.layers[i];
+    	fprintf(stderr, "net - %d /layerstart-%d - %s\n", net.index_n,i, get_layer_string(l.type));
         if(l.delta_gpu){
             fill_gpu(l.outputs * l.batch, 0, l.delta_gpu, 1);
         }

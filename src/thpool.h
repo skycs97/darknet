@@ -224,6 +224,8 @@ typedef struct thpool_{
 	jobqueue  jobqueue;                  /* job queue                 */
 } thpool_;
 
+typedef struct _netlayer netlayer;
+
 typedef struct th_arg{
 	netlayer* arg;
 	int flag;

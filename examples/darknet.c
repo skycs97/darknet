@@ -430,6 +430,7 @@ int main()
 #ifndef GPU
     gpu_index = -1;
 #else
+    gpu_index = 0;
     if(gpu_index >= 0){
         cuda_set_device(gpu_index);
     }
@@ -511,6 +512,8 @@ int main()
     //     pthread_create(&networkArray[count], NULL,predict_classifier2, input);
     //     ++count;
     // }
+    // 
+    
     for(int i=0; i<n_net; i++){
         net_input_des[i] = (test*)malloc(sizeof(test));
         net_input_des[i]->net = denseNetwork[i];

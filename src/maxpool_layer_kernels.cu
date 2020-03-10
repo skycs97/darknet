@@ -102,6 +102,7 @@ extern "C" void forward_maxpool_layer_gpu_thread(netlayer* input)
 
     network net = input->net;
     layer layer = input->layer;
+    
 
     int h = layer.out_h;
     int w = layer.out_w;

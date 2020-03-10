@@ -285,7 +285,6 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
 
         l.biases_gpu = cuda_make_array(l.biases, n);
         l.bias_updates_gpu = cuda_make_array(l.bias_updates, n);
-
         l.delta_gpu = cuda_make_array(l.delta, l.batch*out_h*out_w*n);
         l.output_gpu = cuda_make_array(l.output, l.batch*out_h*out_w*n);
 
