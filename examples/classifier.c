@@ -616,7 +616,9 @@ void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *fi
 void* predict_classifier2(test * input){
     image im = load_image_color((char *)input->input_path, 0, 0);
     network *net = input->net;
-
+    //hojin file out
+    FILE *fp;
+    char fname[] = "result.txt";
     //hoijn ADD FOR
     for(int i=0;i<n_loop;i++){
         set_batch_network(net, 1);
@@ -639,10 +641,16 @@ void* predict_classifier2(test * input){
             hierarchy_predictions(predictions, net->outputs, net->hierarchy, 1, 1);
         top_k(predictions, net->outputs, top, indexes);
         fprintf(stderr, "network : %s: Predicted in %lf seconds.\n", input->netName, what_time_is_it_now() - time);
+        //hojin file
+        if(fp=open(fname,"a")==NULL){
+            fprintf(stderr,"file open error\n");
+            exit(1);
+        }
+        fprintf(fp, "network : %s: Predicted in %lf seconds.\n", input->netName, what_time_is_it_now() - time);
+        
         for (i = 0; i < top; ++i)
         {
             int index = indexes[i];
-
             printf("%5.2f%%: %s\n", predictions[index] * 100, names[index]);
         }
         if (r.data != im.data)
