@@ -483,7 +483,7 @@ int main()
     }  
 #endif
     //fclose(fp);
-#ifdef 0
+#if 0
     for(unsigned int k=0; k<n_net; k++){
         denseNetwork[k] = (network *)load_network("cfg/densenet201.cfg", "densenet201.weights",0);
         denseNetwork[k]->index_n = k;
