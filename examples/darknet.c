@@ -511,10 +511,10 @@ int main()
 
     char buff[256];
     char *input = buff;
-    test *net_input_alex[n_net];
-    test *net_input_vgg[n_net];
-    test *net_input_des[n_net];
-    test *net_input_res[n_net];
+    test *net_input_alex[n_alex];
+    test *net_input_vgg[n_vgg];
+    test *net_input_des[n_des];
+    test *net_input_res[n_res];
 
     while(1){
         printf("Enter Image Path: ");
