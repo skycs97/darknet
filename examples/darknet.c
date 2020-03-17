@@ -453,6 +453,8 @@ int main()
     network *alexNetwork[n_alex];
 
     int n_all = n_des+n_res+n_vgg+n_alex;
+    fp = fopen("result.txt","a");
+    fprintf(fp,"Alex : %d , VGG : %d, Res : %d , Des : %d\n",n_alex,n_vgg,n_res,n_des);
 
 #ifdef THREAD
     //변수 동적할당
@@ -466,24 +468,21 @@ int main()
         pthread_mutex_init(&mutex_t[i], NULL);
         cond_i[i] = 0;
     }
-    fp = fopen("result.txt","a");
     if(fp){
         fprintf(fp,"////////////////////////////////////////////////////////////THREAD ON : THPOOL %d\n",THREAD_NUM_POOL);
     }else{
         fprintf(stderr,"file open error");
         exit(1);
     }
-    fclose(fp);
 #else
-    fp = fopen("result.txt","a");
     if(fp){
         fprintf(fp,"////////////////////////////////////////////////////////////THREAD OFF\n");
     }else{
         fprintf(stderr,"file open error");
         exit(1);
-    }
-    fclose(fp);   
+    }  
 #endif
+    fclose(fp);
     /*
     for(unsigned int k=0; k<n_net; k++){
         denseNetwork[k] = (network *)load_network("cfg/densenet201.cfg", "densenet201.weights",0);
