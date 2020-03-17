@@ -624,6 +624,7 @@ int main()
 #endif
     //fp = fopen("result.txt","a");
     //printf();
+    //fd
     if(fp){
         fprintf(fp, "\nexecution Time : %lf\n\n\n", what_time_is_it_now() - time);
     }else{
