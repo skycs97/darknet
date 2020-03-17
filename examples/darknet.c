@@ -448,27 +448,59 @@ int main()
 
     network *denseNetwork[n_net];
     network *resNetwork[n_net];
+    network *vggNetwork[n_net];
+    network *alexNetwork[n_net];
+    //network *vggNetwork[n_net];
 
 #ifdef THREAD
     //변수 동적할당
-    cond_t = (pthread_cond_t*)malloc(sizeof(pthread_cond_t) * n_net*2);
-    mutex_t = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t) * n_net*2);
-    cond_i = (int*)malloc(sizeof(int) * n_net * 2);
+    cond_t = (pthread_cond_t*)malloc(sizeof(pthread_cond_t) * n_net*4);
+    mutex_t = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t) * n_net*4);
+    cond_i = (int*)malloc(sizeof(int) * n_net * 4);
 
 
-    for(int i=0; i<n_net*2; i++){
+    for(int i=0; i<n_net*4; i++){
         pthread_cond_init(&cond_t[i], NULL);
         pthread_mutex_init(&mutex_t[i], NULL);
         cond_i[i] = 0;
     }
 #endif
+    int denseNum = 0;
+    int resNum = 0;
+    int vggNum = 0;
+    int alexNum = 0;
+    fprintf(stderr,"dense : ");
+    scanf("%d", &denseNum);
+    fflush(stdin);
+    fprintf(stderr,"res : ");
+    scanf("%d", &resNum);
+    fflush(stdin);
+    fprintf(stderr,"vgg : ");
+    scanf("%d", &vggNum);
+    fflush(stdin);
+    fprintf(stderr,"alex : ");
+    scanf("%d", &alexNum);
+    fflush(stdin);
 
-    for(unsigned int k=0; k<n_net; k++){
-        denseNetwork[k] = (network *)load_network("cfg/densenet201.cfg", "densenet201.weights",0);
-        denseNetwork[k]->index_n = k;
-        resNetwork[k] = (network *)load_network("cfg/resnet152.cfg", "resnet152.weights",0);
-        resNetwork[k]->index_n = k+n_net;
+    for(int i =0; i<denseNum; i++){
+        denseNetwork[i] = (network*)load_network("cfg/densenet201.cfg", "densenet201.weights", 0);
     }
+    for(int i = 0; i <resNum; i++){
+        resNetwork[i] = (network*)load_network("cfg/resnet152.cfg", "resnet152.weights", 0);
+    }
+    for(int i = 0; i<vggNum; i++){
+        vggNetwork[i] = (network*)load_network("cfg/vgg-16.cfg", "vgg-16.weights", 0);
+    }
+    for(int i=0; i<alexNum; i++){
+        alexNetwork[i] = (network*)load_network("cfg/alexnet.cfg", "alexnet.weights", 0);
+    }
+
+    // for(unsigned int k=0; k<n_net; k++){
+    //     denseNetwork[k] = (network *)load_network("cfg/densenet201.cfg", "densenet201.weights",0);
+    //     denseNetwork[k]->index_n = k;
+    //     resNetwork[k] = (network *)load_network("cfg/resnet152.cfg", "resnet152.weights",0);
+    //     resNetwork[k]->index_n = k+n_net;
+    // }
 
     list *options = read_data_cfg("cfg/imagenet1k.data");
     char *name_list = option_find_str(options, "names", 0);
