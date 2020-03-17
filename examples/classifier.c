@@ -618,8 +618,6 @@ void* predict_classifier2(test * input){
     network *net = input->net;
     //hojin file out
     FILE *fp;
-    char fname[] = "result.txt";
-    //hoijn ADD FOR
         set_batch_network(net, 1);
         srand(2222222);
 
@@ -643,6 +641,12 @@ void* predict_classifier2(test * input){
         //hojin file
         fp = fopen("result.txt","a");
         
+        #ifdef THREAD
+        fprintf(fp,"////////////////////////////////////////////////////////////THREAD ON\n");
+        #else
+        fprintf(fp,"////////////////////////////////////////////////////////////THREAD OFF\n");
+        #endif
+
         if(fp){
             fprintf(fp, "network : %s: Predicted in %lf seconds.\n", input->netName, what_time_is_it_now() - time);
         }else{
