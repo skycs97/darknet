@@ -641,12 +641,15 @@ void* predict_classifier2(test * input){
         top_k(predictions, net->outputs, top, indexes);
         fprintf(stderr, "network : %s: Predicted in %lf seconds.\n", input->netName, what_time_is_it_now() - time);
         //hojin file
-        if(fp=fopen(fname,"a")==NULL){
+        fp = fopen("result.txt","a");
+        
+        if(fp){
+            fprintf(fp, "network : %s: Predicted in %lf seconds.\n", input->netName, what_time_is_it_now() - time);
+        }else{
             fprintf(stderr,"file open error\n");
             exit(1);
         }
-        fprintf(fp, "network : %s: Predicted in %lf seconds.\n", input->netName, what_time_is_it_now() - time);
-        
+                    
         for (i = 0; i < top; ++i)
         {
             int index = indexes[i];
