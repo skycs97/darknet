@@ -620,7 +620,6 @@ void* predict_classifier2(test * input){
     FILE *fp;
     char fname[] = "result.txt";
     //hoijn ADD FOR
-    for(int i=0;i<n_loop;i++){
         set_batch_network(net, 1);
         srand(2222222);
 
@@ -655,7 +654,7 @@ void* predict_classifier2(test * input){
         }
         if (r.data != im.data)
             free_image(r);
-    }
+    fclose(fp);
     free_image(im);
     free_network(net);
     free(input);
