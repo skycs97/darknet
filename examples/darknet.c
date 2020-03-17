@@ -466,6 +466,23 @@ int main()
         pthread_mutex_init(&mutex_t[i], NULL);
         cond_i[i] = 0;
     }
+    fp = fopen("result.txt","a");
+    if(fp){
+        fprintf(fp,"////////////////////////////////////////////////////////////THREAD ON : THPOOL %d\n",THREAD_NUM_POOL);
+    }else{
+        fprintf(stderr,"file open error");
+        exit(1);
+    }
+    fclose(fp);
+#else
+    fp = fopen("result.txt","a");
+    if(fp){
+        fprintf(fp,"////////////////////////////////////////////////////////////THREAD OFF\n");
+    }else{
+        fprintf(stderr,"file open error");
+        exit(1);
+    }
+    fclose(fp);   
 #endif
     /*
     for(unsigned int k=0; k<n_net; k++){
@@ -619,9 +636,14 @@ int main()
     for(i=0; i<THREAD_NUM_POOL;i++)
 	    pthread_join(thpool->threads[i]->pthread, NULL);
 #endif
-
-    fprintf(stderr, "\n execution Time : %lf\n", what_time_is_it_now() - time);
-
+    fp = fopen("result.txt","a");
+    if(fp){
+        fprintf(fp, "\n execution Time : %lf\n", what_time_is_it_now() - time);
+    }else{
+        fprintf(stderr,"file open error");
+        exit(1);
+    }
+    fclose(fp); 
     free(cond_t);
     free(mutex_t);
     free(cond_i);

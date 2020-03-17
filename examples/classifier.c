@@ -616,8 +616,6 @@ void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *fi
 void* predict_classifier2(test * input){
     image im = load_image_color((char *)input->input_path, 0, 0);
     network *net = input->net;
-    //hojin file out
-    FILE *fp;
         set_batch_network(net, 1);
         srand(2222222);
 
@@ -641,12 +639,6 @@ void* predict_classifier2(test * input){
         //hojin file
         fp = fopen("result.txt","a");
         
-        #ifdef THREAD
-        fprintf(fp,"////////////////////////////////////////////////////////////THREAD ON\n");
-        #else
-        fprintf(fp,"////////////////////////////////////////////////////////////THREAD OFF\n");
-        #endif
-
         if(fp){
             fprintf(fp, "network : %s: Predicted in %lf seconds.\n", input->netName, what_time_is_it_now() - time);
         }else{
