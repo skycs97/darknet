@@ -495,7 +495,7 @@ int main()
         alexNetwork[k]->index_n = k+(n_net*3);
     }
 #endif
-    
+    /*
     for(unsigned int k=0;k<n_alex;k++){
         alexNetwork[k] = (network *)load_network("cfg/alexnet.cfg","alexnet.weights",0);
         alexNetwork[k]->index_n = k;
@@ -510,7 +510,7 @@ int main()
         denseNetwork[k] = (network *)load_network("cfg/densenet201.cfg", "densenet201.weights",0);
         denseNetwork[k]->index_n = k+n_alex+n_vgg;
     }
-
+    */
     for(unsigned int k=0;k<n_res;k++){
         resNetwork[k] = (network *)load_network("cfg/resnet152.cfg", "resnet152.weights",0);
         resNetwork[k]->index_n = k+n_alex+n_vgg+n_des;
@@ -544,11 +544,11 @@ int main()
     image im = load_image_color(buff, 0, 0);
 
     double time = what_time_is_it_now();
-    pthread_t networkArray_alex[n_alex];
-    pthread_t networkArray_vgg[n_vgg];
-    pthread_t networkArray_des[n_des];
+    //pthread_t networkArray_alex[n_alex];
+    //pthread_t networkArray_vgg[n_vgg];
+    //pthread_t networkArray_des[n_des];
     pthread_t networkArray_res[n_res];
-    
+    /*
     for(int i=0; i<n_alex; i++){
         net_input_alex[i] = (test*)malloc(sizeof(test));
         net_input_alex[i]->net = alexNetwork[i];
@@ -590,7 +590,7 @@ int main()
             exit(0);
         }
     }
-
+    */
     for(int i=0; i<n_res; i++){
         net_input_res[i] = (test*)malloc(sizeof(test));
         net_input_res[i]->net = resNetwork[i];
@@ -605,6 +605,7 @@ int main()
           }
     }
 
+    /*
     for(int i=0; i<n_alex; i++){
         pthread_join(networkArray_alex[i], NULL);
     }
@@ -613,7 +614,7 @@ int main()
     } 
     for(int i=0; i<n_des; i++){
         pthread_join(networkArray_des[i], NULL);
-    } 
+    } */
     for(int i=0; i<n_res; i++){
         pthread_join(networkArray_res[i], NULL);
     }  
