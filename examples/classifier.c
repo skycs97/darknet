@@ -623,7 +623,7 @@ void* predict_classifier2(test * input){
 
         int i = 0;
         char **names = input->names;
-        double time = what_time_is_it_now();
+        double time = what_time_is_it_now(),time2;
         int *indexes = calloc(top, sizeof(int));
 
 
@@ -635,12 +635,13 @@ void* predict_classifier2(test * input){
         if (net->hierarchy)
             hierarchy_predictions(predictions, net->outputs, net->hierarchy, 1, 1);
         top_k(predictions, net->outputs, top, indexes);
-        fprintf(stderr, "network : %s: Predicted in %lf seconds.\n", input->netName, what_time_is_it_now() - time);
+        time2 = what_time_is_it_now();
+        fprintf(stderr, "network : %s: Predicted in %lf seconds.\n", input->netName, time2 - time);
         //hojin file
         fp = fopen("result.txt","a");
         
         if(fp){
-            fprintf(fp, "network : %s: Predicted in %lf seconds.\n", input->netName, what_time_is_it_now() - time);
+            fprintf(fp, "network : %s: Predicted in %lf seconds.\n", input->netName, time2 - time);
         }else{
             fprintf(stderr,"file open error\n");
             exit(1);

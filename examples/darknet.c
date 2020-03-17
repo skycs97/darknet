@@ -454,7 +454,7 @@ int main()
 
     int n_all = n_des+n_res+n_vgg+n_alex;
     fp = fopen("result.txt","a");
-    fprintf(fp,"Alex : %d , VGG : %d, Res : %d , Des : %d\n",n_alex,n_vgg,n_res,n_des);
+    fprintf(fp,"*****Alex : %d , VGG : %d, Res : %d , Des : %d*****\n",n_alex,n_vgg,n_res,n_des);
 
 #ifdef THREAD
     //변수 동적할당
@@ -637,7 +637,7 @@ int main()
 #endif
     fp = fopen("result.txt","a");
     if(fp){
-        fprintf(fp, "\n execution Time : %lf\n", what_time_is_it_now() - time);
+        fprintf(fp, "\nexecution Time : %lf\n\n\n", what_time_is_it_now() - time);
     }else{
         fprintf(stderr,"file open error");
         exit(1);
