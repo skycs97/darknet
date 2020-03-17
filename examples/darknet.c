@@ -447,10 +447,10 @@ int main()
     char * resName = "Res";
     char * alexName = "Alex";
 
-    network *denseNetwork[n_des];
+    //network *denseNetwork[n_des];
     network *resNetwork[n_res];
-    network *vggNetwork[n_vgg];
-    network *alexNetwork[n_alex];
+    //network *vggNetwork[n_vgg];
+    //network *alexNetwork[n_alex];
 
     int n_all = n_des+n_res+n_vgg+n_alex;
     fp = fopen("result.txt","a");
@@ -527,9 +527,9 @@ int main()
 
     char buff[256];
     char *input = buff;
-    test *net_input_alex[n_alex];
-    test *net_input_vgg[n_vgg];
-    test *net_input_des[n_des];
+   // test *net_input_alex[n_alex];
+    //test *net_input_vgg[n_vgg];
+    //test *net_input_des[n_des];
     test *net_input_res[n_res];
 
     while(1){
