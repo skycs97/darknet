@@ -482,8 +482,8 @@ int main()
         exit(1);
     }  
 #endif
-    fclose(fp);
-    /*
+    //fclose(fp);
+#ifdef 0
     for(unsigned int k=0; k<n_net; k++){
         denseNetwork[k] = (network *)load_network("cfg/densenet201.cfg", "densenet201.weights",0);
         denseNetwork[k]->index_n = k;
@@ -494,7 +494,7 @@ int main()
         alexNetwork[k] = (network *)load_network("cfg/alexnet.cfg","alexnet.weights",0);
         alexNetwork[k]->index_n = k+(n_net*3);
     }
-    */
+#endif
     
     for(unsigned int k=0;k<n_alex;k++){
         alexNetwork[k] = (network *)load_network("cfg/alexnet.cfg","alexnet.weights",0);
@@ -548,19 +548,6 @@ int main()
     pthread_t networkArray_vgg[n_vgg];
     pthread_t networkArray_des[n_des];
     pthread_t networkArray_res[n_res];
-
-
-    // for(int i=0; i<vggCount; ++i){
-    //     test * input = (test*)malloc(sizeof(test));
-    //     input->net = *vggNetwork;
-    //     input->im = im;
-    //     input->names = names;
-    //     input->netName = vggName;
-
-    //     pthread_create(&networkArray[count], NULL,predict_classifier2, input);
-    //     ++count;
-    // }
-    // 
     
     for(int i=0; i<n_alex; i++){
         net_input_alex[i] = (test*)malloc(sizeof(test));
@@ -635,7 +622,7 @@ int main()
     for(i=0; i<THREAD_NUM_POOL;i++)
 	    pthread_join(thpool->threads[i]->pthread, NULL);
 #endif
-    fp = fopen("result.txt","a");
+    //fp = fopen("result.txt","a");
     if(fp){
         fprintf(fp, "\nexecution Time : %lf\n\n\n", what_time_is_it_now() - time);
     }else{
