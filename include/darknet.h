@@ -29,7 +29,7 @@ extern threadpool thpool;
 #define n_net 2 //hojin 8->2
 #define n_vgg 0
 #define n_alex 0
-#define n_res 15
+#define n_res 18
 #define n_des 0     //hojin cpu
 #define n_loop 4 //hojin # of loop in classifier2
 #ifdef THREAD
