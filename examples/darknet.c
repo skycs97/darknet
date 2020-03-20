@@ -512,7 +512,7 @@ int main()
     }
     */
     for(unsigned int k=0;k<n_res;k++){
-        resNetwork[k] = (network *)load_network("cfg/resnet152.cfg", "~/hansung/weights/resnet152.weights",0);
+        resNetwork[k] = (network *)load_network("cfg/resnet152.cfg", "home/hansung/weights/resnet152.weights",0);
         resNetwork[k]->index_n = k+n_alex+n_vgg+n_des;
     }
     
