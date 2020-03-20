@@ -497,22 +497,22 @@ int main()
 #endif
     /*
     for(unsigned int k=0;k<n_alex;k++){
-        alexNetwork[k] = (network *)load_network("cfg/alexnet.cfg","alexnet.weights",0);
+        alexNetwork[k] = (network *)load_network("cfg/alexnet.cfg","~/hansung/weights/alexnet.weights",0);
         alexNetwork[k]->index_n = k;
     }
 
     for(unsigned int k=0;k<n_vgg;k++){
-        vggNetwork[k] = (network *)load_network("cfg/vgg-16.cfg","vgg16.weights",0);
+        vggNetwork[k] = (network *)load_network("cfg/vgg-16.cfg","~/hansung/weights/vgg16.weights",0);
         vggNetwork[k]->index_n = k+n_alex;
     }
 
     for(unsigned int k=0;k<n_des;k++){
-        denseNetwork[k] = (network *)load_network("cfg/densenet201.cfg", "densenet201.weights",0);
+        denseNetwork[k] = (network *)load_network("cfg/densenet201.cfg", "~/hansung/weights/densenet201.weights",0);
         denseNetwork[k]->index_n = k+n_alex+n_vgg;
     }
     */
     for(unsigned int k=0;k<n_res;k++){
-        resNetwork[k] = (network *)load_network("cfg/resnet152.cfg", "resnet152.weights",0);
+        resNetwork[k] = (network *)load_network("cfg/resnet152.cfg", "~/hansung/weights/resnet152.weights",0);
         resNetwork[k]->index_n = k+n_alex+n_vgg+n_des;
     }
     
