@@ -204,29 +204,78 @@ void forward_network(network *netp)
         return;
     }
 #endif
+    File *convFile = fopen("conv.txt", "a+");
+    File *maxFile = fopen("max.txt", "a+");
+    File *connectFile = fopen("connect.txt", "a+");
+    File *softFile = fopen("soft.txt", "a+");
+    File *shortFile = fopen("short.txt", "a+");
+    File *avgFile = fopen("avg.txt", "a+");
+    File *routeFile = fopen("route.txt", "a+");
+
+    double start_time, exe_time;
+
     network net = *netp;
-    double start_time;
+
     int i;
     for (i = 0; i < net.n; ++i)
     {
-        start_time = what_time_is_it_now();
         net.index = i;
         layer l = net.layers[i];
         if (l.delta)
         {
             fill_cpu(l.outputs * l.batch, 0, l.delta, 1);
         }
+        start_time = what_time_is_it_now();
         l.forward(l, net);
+        exe_time = what_time_is_it_now() - start_time;
         net.input = l.output;
         if (l.truth)
         {
             net.truth = l.output;
         }
-        if (l.type == CONVOLUTIONAL)
+
+        switch (l.type)
         {
-            fprintf(file, "%s,%d,%d,%d,%d,%d,%lf\n", get_layer_string(l.type), l.n, l.size, l.stride, l.padding, l.pad, what_time_is_it_now() - start_time);
+        case CONVOLUTIONAL:
+            fprintf(convFile, "%d,%d,%d,%d,%d,%lf\n", l.c, l.size, l.out_w, l.out_h, l.out_c, exe_time);
+            break;
+        case MAXPOOL:
+            fprintf(maxFile, "%d,%d,%d,%d,%lf\n", l.size, l.out_w, l.out_h, l.out_c, exe_time);
+            break;
+        case CONNECTED:
+            fprintf(connectFile, "%d,%d,%lf\n", l.inputs, l.outputs, exe_time);
+            break;
+        case SOFTMAX:
+            fprintf(softFile, "%d,%lf\n", l.inputs, exe_time);
+            break;
+        case SHORTCUT:
+            int stride = l.w / l.out_w;
+            int sample = l.out_w / l.w;
+            if (stride < 1)
+                stride = 1;
+            if (sample < 1)
+                sample = 1;
+            int minw = (l.w < l.out_w) ? l.w : l.out_w;
+            int minh = (l.h < l.out_h) ? l.h : l.out_h;
+            int minc = (l.c < l.out_c) ? l.c : l.out_c;
+            fprintf(shortFile, "%d,%d,%d,%d,%d,%lf\n", minw, minh, minc, stride, sample, exe_time);
+            break;
+        case AVGPOOL:
+            fprintf(avgFile, "%d,%d,%d,%lf\n", l.w, l.h, l.c, exe_time);
+            break;
+        case ROUTE:
+            fprintf(routeFile, "%d,%d,%lf\n", l.input_sizes[0], l.input_sizes[1], exe_time);
+            break;
         }
     }
+
+    fclose(convFile);
+    fclose(maxFile);
+    fclose(connectFile);
+    fclose(softFile);
+    fclose(shortFile);
+    fclose(avgFile);
+    fclose(routeFile);
     calc_network_cost(netp);
 }
 
@@ -883,6 +932,16 @@ float *network_output(network *net)
 
 void forward_network_gpu(network *netp)
 {
+    File *convFile = fopen("conv.txt", "a+");
+    File *maxFile = fopen("max.txt", "a+");
+    File *connectFile = fopen("connect.txt", "a+");
+    File *softFile = fopen("soft.txt", "a+");
+    File *shortFile = fopen("short.txt", "a+");
+    File *avgFile = fopen("avg.txt", "a+");
+    File *routeFile = fopen("route.txt", "a+");
+
+    double start_time, exe_time;
+
     network net = *netp;
     cuda_set_device(net.gpu_index);
     cuda_push_array(net.input_gpu, net.input, net.inputs * net.batch);
@@ -894,14 +953,16 @@ void forward_network_gpu(network *netp)
     int i;
     for (i = 0; i < net.n; ++i)
     {
-        start_time = what_time_is_it_now();
+
         net.index = i;
         layer l = net.layers[i];
         if (l.delta_gpu)
         {
             fill_gpu(l.outputs * l.batch, 0, l.delta_gpu, 1);
         }
+        start_time = what_time_is_it_now();
         l.forward_gpu(l, net);
+        exe_time = what_time_is_it_now() - start_time;
         net.input_gpu = l.output_gpu;
         net.input = l.output;
         if (l.truth)
@@ -909,11 +970,47 @@ void forward_network_gpu(network *netp)
             net.truth_gpu = l.output_gpu;
             net.truth = l.output;
         }
-        if (l.type == CONVOLUTIONAL)
+        switch (l.type)
         {
-            fprintf(file, "%s,%d,%d,%d,%d,%d,%lf\n", get_layer_string(l.type), l.n, l.size, l.stride, l.padding, l.pad, what_time_is_it_now() - start_time);
+        case CONVOLUTIONAL:
+            fprintf(convFile, "%d,%d,%d,%d,%d,%lf\n", l.c, l.size, l.out_w, l.out_h, l.out_c, exe_time);
+            break;
+        case MAXPOOL:
+            fprintf(maxFile, "%d,%d,%d,%d,%lf\n", l.size, l.out_w, l.out_h, l.out_c, exe_time);
+            break;
+        case CONNECTED:
+            fprintf(connectFile, "%d,%d,%lf\n", l.inputs, l.outputs, exe_time);
+            break;
+        case SOFTMAX:
+            fprintf(softFile, "%d,%lf\n", l.inputs, exe_time);
+            break;
+        case SHORTCUT:
+            int stride = l.w / l.out_w;
+            int sample = l.out_w / l.w;
+            if (stride < 1)
+                stride = 1;
+            if (sample < 1)
+                sample = 1;
+            int minw = (l.w < l.out_w) ? l.w : l.out_w;
+            int minh = (l.h < l.out_h) ? l.h : l.out_h;
+            int minc = (l.c < l.out_c) ? l.c : l.out_c;
+            fprintf(shortFile, "%d,%d,%d,%d,%d,%lf\n", minw, minh, minc, stride, sample, exe_time);
+            break;
+        case AVGPOOL:
+            fprintf(avgFile, "%d,%d,%d,%lf\n", l.w, l.h, l.c, exe_time);
+            break;
+        case ROUTE:
+            fprintf(routeFile, "%d,%d,%lf\n", l.input_sizes[0], l.input_sizes[1], exe_time);
+            break;
         }
     }
+    fclose(convFile);
+    fclose(maxFile);
+    fclose(connectFile);
+    fclose(softFile);
+    fclose(shortFile);
+    fclose(avgFile);
+    fclose(routeFile);
     pull_network_output(netp);
     calc_network_cost(netp);
 }
