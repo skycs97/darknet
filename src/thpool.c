@@ -12,6 +12,7 @@
 #endif
 
 #include "thpool.h"
+#include "darknet.h"
 #include "time_checker.h"
 #include <sched.h>
 
@@ -99,6 +100,8 @@ static void bsem_reset(struct bsem *bsem_p);
 static void bsem_post(struct bsem *bsem_p);
 static void bsem_post_all(struct bsem *bsem_p);
 static void bsem_wait(struct bsem *bsem_p);
+
+static int gpuOrCpu(joqueue *jobqueue_p, jobqueue *gpuqueue_p);
 
 /* ========================== THREADPOOL ============================ */
 
@@ -311,8 +314,15 @@ static int thread_init(thpool_ *thpool_p, struct thread **thread_p, int id)
 
 	(*thread_p)->thpool_p = thpool_p;
 	(*thread_p)->id = id;
-
-	pthread_create(&(*thread_p)->pthread, NULL, (void *)thread_do, (*thread_p));
+	//cs
+	if (thpool_p->threads[n]->flag == 1)
+	{
+		pthread_create(&(*thread_p)->pthread, NULL, (void *)thread_do_gpu, (*thread_p));
+	}
+	else
+	{
+		pthread_create(&(*thread_p)->pthread, NULL, (void *)thread_do, (*thread_p));
+	}
 	pthread_detach((*thread_p)->pthread);
 	return 0;
 }
@@ -336,6 +346,7 @@ static void thread_hold(int sig_id)
 * @param  thread        thread that will run this function
 * @return nothing
 */
+//cs
 #if 0
 static void *thread_do(struct thread *thread_p)
 {
@@ -412,7 +423,7 @@ static void *thread_do(struct thread *thread_p)
 	return NULL;
 }
 #else
-
+//cs
 static void *thread_do(struct thread *thread_p)
 {
 
@@ -465,7 +476,7 @@ static void *thread_do(struct thread *thread_p)
 			job *job_p = jobqueue_pull(&thpool_p->jobqueue);
 			if (job_p)
 			{
-				if ()
+				if (gpuOrCpu(job_p->arg))
 				{
 					jobqueue_push(&thpool_p->gpuqueue, job_p);
 				}
@@ -494,7 +505,7 @@ static void *thread_do(struct thread *thread_p)
 
 	return NULL;
 }
-
+//cs
 static void *thread_do_gpu(struct thread *thread_p)
 {
 
@@ -721,4 +732,15 @@ static void bsem_wait(bsem *bsem_p)
 	}
 	bsem_p->v = 0;
 	pthread_mutex_unlock(&bsem_p->mutex);
+}
+
+int gpuOrCpu(joqueue *jobqueue_p, jobqueue *gpuqueue_p, )
+{
+	if (jobqueue_p->front == NULL)
+	{
+		}
+	else
+	{
+		return 1;
+	}
 }
