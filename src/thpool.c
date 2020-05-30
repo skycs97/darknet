@@ -1,3 +1,4 @@
+
 #define _POSIX_C_SOURCE 200809L
 #define _GNU_SOURCE
 #include <unistd.h>
@@ -12,8 +13,6 @@
 #endif
 
 #include "thpool.h"
-#include "darknet.h"
-#include "time_checker.h"
 #include <sched.h>
 
 #ifdef THPOOL_DEBUG
@@ -85,7 +84,6 @@ typedef struct thpool_{
 
 static int thread_init(thpool_ *thpool_p, struct thread **thread_p, int id);
 static void *thread_do(struct thread *thread_p);
-static void *thread_do_gpu(struct thread *thread_p);
 static void thread_hold(int sig_id);
 static void thread_destroy(struct thread *thread_p);
 
@@ -100,8 +98,6 @@ static void bsem_reset(struct bsem *bsem_p);
 static void bsem_post(struct bsem *bsem_p);
 static void bsem_post_all(struct bsem *bsem_p);
 static void bsem_wait(struct bsem *bsem_p);
-
-static int gpuOrCpu(joqueue *jobqueue_p, jobqueue *gpuqueue_p);
 
 /* ========================== THREADPOOL ============================ */
 
@@ -127,18 +123,12 @@ struct thpool_ *thpool_init(int num_threads)
 	}
 	thpool_p->num_threads_alive = 0;
 	thpool_p->num_threads_working = 0;
+	thpool_p->thread_length = num_threads;
 
 	/* Initialise the job queue */
 	if (jobqueue_init(&thpool_p->jobqueue) == -1)
 	{
 		err("thpool_init(): Could not allocate memory for job queue\n");
-		free(thpool_p);
-		return NULL;
-	}
-	//추가
-	if (jobqueue_init(&thpool_p->gpuqueue) == -1)
-	{
-		err("thpool_init(): Could not allocate memory for job queue-gpu\n");
 		free(thpool_p);
 		return NULL;
 	}
@@ -163,21 +153,6 @@ struct thpool_ *thpool_init(int num_threads)
 	for (n = 0; n < num_threads; n++)
 	{
 		thread_init(thpool_p, &thpool_p->threads[n], n);
-
-		if (n == (num_threads - 1))
-		{
-			thpool_p->threads[n]->flag = 1;
-		}
-		else
-		{
-			thpool_p->threads[n]->flag = 0;
-		}
-
-		/* kmsjames 2020 0215 bug fix for pinning each thread on a specified CPU */
-		CPU_ZERO(&cpuset);
-		CPU_SET(n, &cpuset); //only this thread has the affinity for the 'n'-th CPU
-		pthread_setaffinity_np(thpool_p->threads[n]->pthread, sizeof(cpu_set_t), &cpuset);
-
 #if THPOOL_DEBUG
 		printf("THPOOL_DEBUG: Created thread %d in pool \n", n);
 #endif
@@ -192,7 +167,7 @@ struct thpool_ *thpool_init(int num_threads)
 }
 
 /* Add work to the thread pool */
-int thpool_add_work(thpool_ *thpool_p, void (*function_p)(void *), void *arg_p)
+int thpool_add_work(thpool_ *thpool_p, void (*function_p)(void *), void *arg_p, double time)
 {
 	job *newjob;
 
@@ -206,7 +181,7 @@ int thpool_add_work(thpool_ *thpool_p, void (*function_p)(void *), void *arg_p)
 	/* add function and argument */
 	newjob->function = function_p;
 	newjob->arg = arg_p;
-
+	newjob->exe_time = time;
 	/* add job to queue */
 	jobqueue_push(&thpool_p->jobqueue, newjob);
 
@@ -314,15 +289,8 @@ static int thread_init(thpool_ *thpool_p, struct thread **thread_p, int id)
 
 	(*thread_p)->thpool_p = thpool_p;
 	(*thread_p)->id = id;
-	//cs
-	if (thpool_p->threads[n]->flag == 1)
-	{
-		pthread_create(&(*thread_p)->pthread, NULL, (void *)thread_do_gpu, (*thread_p));
-	}
-	else
-	{
-		pthread_create(&(*thread_p)->pthread, NULL, (void *)thread_do, (*thread_p));
-	}
+
+	pthread_create(&(*thread_p)->pthread, NULL, (void *)thread_do, (*thread_p));
 	pthread_detach((*thread_p)->pthread);
 	return 0;
 }
@@ -346,8 +314,6 @@ static void thread_hold(int sig_id)
 * @param  thread        thread that will run this function
 * @return nothing
 */
-//cs
-#if 0
 static void *thread_do(struct thread *thread_p)
 {
 
@@ -402,165 +368,6 @@ static void *thread_do(struct thread *thread_p)
 			{
 				func_buff = job_p->function;
 				arg_buff = job_p->arg;
-				((th_arg *)arg_buff)->flag = thread_p->flag;
-				func_buff(arg_buff);
-				free(job_p);
-			}
-
-			pthread_mutex_lock(&thpool_p->thcount_lock);
-			thpool_p->num_threads_working--;
-			if (!thpool_p->num_threads_working)
-			{
-				pthread_cond_signal(&thpool_p->threads_all_idle);
-			}
-			pthread_mutex_unlock(&thpool_p->thcount_lock);
-		}
-	}
-	pthread_mutex_lock(&thpool_p->thcount_lock);
-	thpool_p->num_threads_alive--;
-	pthread_mutex_unlock(&thpool_p->thcount_lock);
-
-	return NULL;
-}
-#else
-//cs
-static void *thread_do(struct thread *thread_p)
-{
-
-	/* Set thread name for profiling and debuging */
-	char thread_name[128] = {0};
-	sprintf(thread_name, "thread-pool-%d", thread_p->id);
-
-#if defined(__linux__)
-	/* Use prctl instead to prevent using _GNU_SOURCE flag and implicit declaration */
-	prctl(PR_SET_NAME, thread_name);
-#elif defined(__APPLE__) && defined(__MACH__)
-	pthread_setname_np(thread_name);
-#else
-	err("thread_do(): pthread_setname_np is not supported on this system");
-#endif
-
-	/* Assure all threads have been created before starting serving */
-	thpool_ *thpool_p = thread_p->thpool_p;
-
-	/* Register signal handler */
-	struct sigaction act;
-	sigemptyset(&act.sa_mask);
-	act.sa_flags = 0;
-	act.sa_handler = thread_hold;
-	if (sigaction(SIGUSR1, &act, NULL) == -1)
-	{
-		err("thread_do(): cannot handle SIGUSR1");
-	}
-
-	/* Mark thread as alive (initialized) */
-	pthread_mutex_lock(&thpool_p->thcount_lock);
-	thpool_p->num_threads_alive += 1;
-	pthread_mutex_unlock(&thpool_p->thcount_lock);
-
-	while (threads_keepalive)
-	{
-
-		bsem_wait(thpool_p->jobqueue.has_jobs);
-
-		if (threads_keepalive)
-		{
-
-			pthread_mutex_lock(&thpool_p->thcount_lock);
-			thpool_p->num_threads_working++;
-			pthread_mutex_unlock(&thpool_p->thcount_lock);
-
-			/* Read job from queue and execute it */
-			void (*func_buff)(void *);
-			void *arg_buff;
-			job *job_p = jobqueue_pull(&thpool_p->jobqueue);
-			if (job_p)
-			{
-				if (gpuOrCpu(job_p->arg))
-				{
-					jobqueue_push(&thpool_p->gpuqueue, job_p);
-				}
-				else
-				{
-					func_buff = job_p->function;
-					arg_buff = job_p->arg;
-					((th_arg *)arg_buff)->flag = thread_p->flag;
-					func_buff(arg_buff);
-					free(job_p);
-				}
-			}
-
-			pthread_mutex_lock(&thpool_p->thcount_lock);
-			thpool_p->num_threads_working--;
-			if (!thpool_p->num_threads_working)
-			{
-				pthread_cond_signal(&thpool_p->threads_all_idle);
-			}
-			pthread_mutex_unlock(&thpool_p->thcount_lock);
-		}
-	}
-	pthread_mutex_lock(&thpool_p->thcount_lock);
-	thpool_p->num_threads_alive--;
-	pthread_mutex_unlock(&thpool_p->thcount_lock);
-
-	return NULL;
-}
-//cs
-static void *thread_do_gpu(struct thread *thread_p)
-{
-
-	/* Set thread name for profiling and debuging */
-	char thread_name[128] = {0};
-	sprintf(thread_name, "thread-pool-%d", thread_p->id);
-
-#if defined(__linux__)
-	/* Use prctl instead to prevent using _GNU_SOURCE flag and implicit declaration */
-	prctl(PR_SET_NAME, thread_name);
-#elif defined(__APPLE__) && defined(__MACH__)
-	pthread_setname_np(thread_name);
-#else
-	err("thread_do(): pthread_setname_np is not supported on this system");
-#endif
-
-	/* Assure all threads have been created before starting serving */
-	thpool_ *thpool_p = thread_p->thpool_p;
-
-	/* Register signal handler */
-	struct sigaction act;
-	sigemptyset(&act.sa_mask);
-	act.sa_flags = 0;
-	act.sa_handler = thread_hold;
-	if (sigaction(SIGUSR1, &act, NULL) == -1)
-	{
-		err("thread_do(): cannot handle SIGUSR1");
-	}
-
-	/* Mark thread as alive (initialized) */
-	pthread_mutex_lock(&thpool_p->thcount_lock);
-	thpool_p->num_threads_alive += 1;
-	pthread_mutex_unlock(&thpool_p->thcount_lock);
-
-	while (threads_keepalive)
-	{
-
-		bsem_wait(thpool_p->gpuqueue.has_jobs);
-
-		if (threads_keepalive)
-		{
-
-			pthread_mutex_lock(&thpool_p->thcount_lock);
-			thpool_p->num_threads_working++;
-			pthread_mutex_unlock(&thpool_p->thcount_lock);
-
-			/* Read job from queue and execute it */
-			void (*func_buff)(void *);
-			void *arg_buff;
-			job *job_p = jobqueue_pull(&thpool_p->jobqueue);
-			if (job_p)
-			{
-				func_buff = job_p->function;
-				arg_buff = job_p->arg;
-				((th_arg *)arg_buff)->flag = thread_p->flag;
 				func_buff(arg_buff);
 				free(job_p);
 			}
@@ -644,9 +451,18 @@ static void jobqueue_push(jobqueue *jobqueue_p, struct job *newjob)
 		jobqueue_p->rear = newjob;
 	}
 	jobqueue_p->len++;
-
+	jobqueue_p->total_time += newjob->exe_time;
 	bsem_post(jobqueue_p->has_jobs);
+	pthread_mutex_unlock(&jobqueue_p->rwmutex);
 }
+
+/* Get first job from queue(removes it from queue)
+<<<<<<< HEAD
+ *
+ * Notice: Caller MUST hold a mutex
+=======
+>>>>>>> da2c0fe45e43ce0937f272c8cd2704bdc0afb490
+ */
 static struct job *jobqueue_pull(jobqueue *jobqueue_p)
 {
 
@@ -663,11 +479,13 @@ static struct job *jobqueue_pull(jobqueue *jobqueue_p)
 		jobqueue_p->front = NULL;
 		jobqueue_p->rear = NULL;
 		jobqueue_p->len = 0;
+		jobqueue_p->total_time = 0.0;
 		break;
 
 	default: /* if >1 jobs in queue */
 		jobqueue_p->front = job_p->prev;
 		jobqueue_p->len--;
+		jobqueue_p->total_time -= job_p->exe_time;
 		/* more than one job in queue -> post it */
 		bsem_post(jobqueue_p->has_jobs);
 	}
@@ -732,15 +550,4 @@ static void bsem_wait(bsem *bsem_p)
 	}
 	bsem_p->v = 0;
 	pthread_mutex_unlock(&bsem_p->mutex);
-}
-
-int gpuOrCpu(joqueue *jobqueue_p, jobqueue *gpuqueue_p, )
-{
-	if (jobqueue_p->front == NULL)
-	{
-		}
-	else
-	{
-		return 1;
-	}
 }

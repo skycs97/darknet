@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
-#include "thpool.h"
+#include "thpool_ex.h"
 
 #ifdef GPU
 #define BLOCK 512
@@ -25,7 +25,7 @@ extern "C"
 
 #define SECRET_NUM -1234
     extern int gpu_index;
-    extern threadpool thpool;
+    extern twin_thpool *twin_thp;
 #define THREAD_NUM_POOL 8
 #define n_net 2  //hojin 8->2
 #define n_loop 4 //hojin # of loop in classifier2
@@ -915,7 +915,6 @@ extern "C"
     {
         network net;
         layer layer;
-        int flag;
     } netlayer;
 
 #ifdef __cplusplus

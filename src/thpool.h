@@ -55,7 +55,7 @@ extern "C"
 								 * @param  arg_p         pointer to an argument
 								  * @return 0 on successs, -1 otherwise.
 								   */
-	extern int thpool_add_work(threadpool, void (*function_p)(void *), void *arg_p);
+	extern int thpool_add_work(threadpool, void (*function_p)(void *), void *arg_p, double time);
 
 	/**
 		  * @brief Wait for all queued jobs to finish
@@ -182,6 +182,7 @@ extern "C"
 		struct job *prev;			 /* pointer to previous job   */
 		void (*function)(void *arg); /* function pointer          */
 		void *arg;					 /* function's argument       */
+		double exe_time;
 	} job;
 
 	/* Job queue */
@@ -192,6 +193,7 @@ extern "C"
 		job *rear;				 /* pointer to rear  of queue */
 		bsem *has_jobs;			 /* flag as binary semaphore  */
 		int len;				 /* number of jobs in queue   */
+		double total_time;
 	} jobqueue;
 
 #define CPU_FLAG 0
@@ -203,7 +205,8 @@ extern "C"
 		int id;					  /* friendly id               */
 		pthread_t pthread;		  /* pointer to actual thread  */
 		struct thpool_ *thpool_p; /* access to thpool          */
-		int flag;
+		double start_time;
+		double exe_time;
 	} thread;
 
 	/* Threadpool */
@@ -215,16 +218,10 @@ extern "C"
 		pthread_mutex_t thcount_lock;	  /* used for thread count etc */
 		pthread_cond_t threads_all_idle;  /* signal to thpool_wait     */
 		jobqueue jobqueue;				  /* job queue                 */
-		jobqueue gpuqueue;				  /* gpu queue				  */
+		int thread_length;
 	} thpool_;
 
 	typedef struct _netlayer netlayer;
-
-	typedef struct th_arg
-	{
-		netlayer *arg;
-		int flag;
-	} th_arg;
 
 #endif
 
