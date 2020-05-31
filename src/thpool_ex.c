@@ -7,6 +7,9 @@
 
 #define _GNU_SOURCE
 
+#define GPU
+#define THREAD
+
 double get_thread_min_time(threadpool thpool);
 
 twin_thpool *twin_thpool_init(int thread_num_cpu, int thread_num_gpu)
@@ -48,7 +51,7 @@ twin_thpool *twin_thpool_init(int thread_num_cpu, int thread_num_gpu)
     return twin_thpool_p;
 }
 
-int add_job(twin_thpool *twin_thpool_p, void (*function_cpu)(void *), void (*function_gpu)(void *), netlayer *arg_p)
+int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_p, int flag)
 {
     threadpool cpu = twin_thpool_p->thpool_cpu;
     threadpool gpu = twin_thpool_p->thpool_gpu;
@@ -56,28 +59,28 @@ int add_job(twin_thpool *twin_thpool_p, void (*function_cpu)(void *), void (*fun
     double cpu_time = cpu->jobqueue.total_time;
     double gpu_time = gpu->jobqueue.total_time;
 
-    int flag = 0;
+    int reflag = 0;
 
     if (gpu->jobqueue.total_time < cpu->jobqueue.total_time)
     {
         thpool_add_work(gpu, function_gpu, (void *)arg_p, arg_p->layer.exe_time_gpu);
-        flag = 1;
+        reflag = 1;
     }
     else
     {
         if (cpu_time + get_thread_min_time(cpu) < gpu_time + get_thread_min_time(gpu))
         {
-            thpool_add_work(cpu, function_cpu, (void *)arg_p, arg_p->layer.exe_time);
-            flag = 0;
+            reflag = 0;
+            thpool_add_work(cpu, function, (void *)arg_p, arg_p->layer.exe_time);
         }
         else
         {
-            thpool_add_work(gpu, function_gpu, (void *)arg_p, arg_p->layer.exe_time_gpu);
-            flag = 1;
+            reflag = 1;
+            thpool_add_work(gpu, function, (void *)arg_p, arg_p->layer.exe_time_gpu);
         }
     }
 
-    return flag;
+    return reflag;
 }
 
 double get_thread_min_time(threadpool thpool)

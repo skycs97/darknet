@@ -913,8 +913,9 @@ extern "C"
     } test;
     typedef struct _netlayer
     {
-        network net;
-        layer layer;
+        network* net;
+        layer *layer;
+        int flag;
     } netlayer;
 
 #ifdef __cplusplus

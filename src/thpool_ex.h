@@ -11,6 +11,6 @@ typedef struct twin_thpool
 
 twin_thpool *twin_thpool_init(int, int);
 
-int add_job(twin_thpool *, void (*function_p_cpu)(void *), void (*function_p_gpu)(void *), netlayer *arg_p);
+int add_job(twin_thpool *, void (*function)(void *), netlayer *arg_p, int flag);
 
 #endif
