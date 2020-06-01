@@ -1,7 +1,7 @@
-
 #define _POSIX_C_SOURCE 200809L
 #define _GNU_SOURCE
 #include <unistd.h>
+#include <sys/types.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,6 +13,7 @@
 #endif
 
 #include "thpool.h"
+#include "utils.h"
 #include <sched.h>
 
 #ifdef THPOOL_DEBUG
@@ -368,6 +369,8 @@ static void *thread_do(struct thread *thread_p)
 			{
 				func_buff = job_p->function;
 				arg_buff = job_p->arg;
+				thread_p->start_time = what_time_is_it_now();
+				thread_p->exe_time = job_p->exe_time;
 				func_buff(arg_buff);
 				free(job_p);
 			}

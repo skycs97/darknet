@@ -62,30 +62,6 @@ network *load_network(char *cfg, char *weights, int clear)
 
     return net;
 }
-network *copy_network(network *source)
-{
-    network *des = (network *)malloc(sizeof(network));
-    unsigned int temp_cnt;
-    unsigned char *temp_src_ptr = (unsigned char *)source;
-    unsigned char *temp_des_ptr = (unsigned char *)des;
-    temp_cnt = sizeof(network);
-
-    for (unsigned int i = 0; i < temp_cnt; i++)
-        temp_des_ptr[i] = temp_src_ptr[i];
-#if 0
-    des->seen = calloc(1, sizeof(size_t));
-    des->t    = calloc(1, sizeof(int));
-    des->cost = calloc(1, sizeof(float));
-    
-    des->input = calloc(source->inputs*source->batch, sizeof(float));
-    des->truth = calloc(source->truths*source->batch, sizeof(float));
-    des->workspace = calloc(1, source->workspace_size);
-    des->scales = calloc(source->num_steps, sizeof(float));
-    des->steps = calloc(source->num_steps, sizeof(int));
-#endif
-
-    return des;
-}
 
 size_t get_current_batch(network *net)
 {
@@ -219,8 +195,6 @@ network *make_network(int n)
     net->cost = calloc(1, sizeof(float));
     return net;
 }
-#define THREAD
-#define GPU
 #ifdef THREAD
 #ifdef GPU
 void forward_function(netlayer *input)
@@ -229,15 +203,11 @@ void forward_function(netlayer *input)
 
     if (input->flag == 1)
     {
-        //fprintf(stderr, "gpu\n");
-        //cuda_push_array(nl->net.input_gpu, nl->net.input, ((nl->net).inputs)*((nl->net).batch));
-
         if (input->layer.delta_gpu)
         {
             fill_gpu(input->layer.outputs * input->layer.batch, 0, input->layer.delta_gpu, 1);
         }
         input->layer.forward_gpu_thread(input);
-        //cuda_pull_array(input->layer.output_gpu, input->layer.output, input->layer.outputs * input->layer.batch);
     }
     else if (input->flag == 0)
     {
@@ -248,7 +218,7 @@ void forward_function(netlayer *input)
         }
         input->layer.forward_thread(input);
     }
-
+    //printf("flag - %d\n", input->flag);
     cond_i[input->net.index_n] = 0;
     pthread_cond_signal(&cond_t[input->net.index_n]);
     pthread_mutex_unlock(&mutex_t[input->net.index_n]);
@@ -268,30 +238,33 @@ void forward_network(network *netp)
     {
         cuda_push_array(net.truth_gpu, net.truth, net.truths * net.batch);
     }
+    netlayer *nl = (netlayer *)malloc(sizeof(netlayer));
+
     for (i = 0; i < net.n; ++i)
     {
+        printf("%d\n", i);
         pthread_mutex_lock(&mutex_t[net.index_n]);
-        //cuda_push_array(net.input_gpu, net.input, net.inputs * net.batch);
         cond_i[net.index_n] = 1;
         net.index = i;
         layer l = net.layers[i];
 
-        netlayer *nl;
+        nl->layer = l;
+        nl->net = net;
 
-        nl->layer = &l;
-        nl.net = &net;
-
-        lastFlag = add_job(twin_thp, l.forward_tread, l.forward_gpu_thread, nl, lastFlag);
+        lastFlag = add_job(twin_thp, forward_function, nl, lastFlag);
+        printf("net %d - flag %d\n", net.index_n, lastFlag);
         while (cond_i[net.index_n] == 1)
         {
             pthread_cond_wait(&cond_t[net.index_n], &mutex_t[net.index_n]);
         }
-        if (lastFlag == 0)
-        {
-            net.input = l.output;
-        }
-        else if (lastFlag == 1)
-            net.input_gpu = l.output_gpu;
+        //if (lastFlag == 0)
+        //{
+        net.input = l.output;
+        //}
+        //else if (lastFlag == 1)
+        //{
+        net.input_gpu = l.output_gpu;
+        //}
         net.inputs = l.outputs;
 
         if (l.truth)

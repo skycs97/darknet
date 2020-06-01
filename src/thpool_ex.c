@@ -1,14 +1,14 @@
-#include "thpool_ex.h"
-#include <stdio.h>
+#define _GNU_SOURCE
 #include <sched.h>
+
 #include <pthread.h>
+#include "thpool.h"
+#include "thpool_ex.h"
+
+#include <stdio.h>
+
 #include <limits.h>
 #include <utils.h>
-
-#define _GNU_SOURCE
-
-#define GPU
-#define THREAD
 
 double get_thread_min_time(threadpool thpool);
 
@@ -38,12 +38,12 @@ twin_thpool *twin_thpool_init(int thread_num_cpu, int thread_num_gpu)
 
         if (n_cpu < thread_num_cpu)
         {
-            pthread_setaffinity_np(twin_thpool_p->thpool_cpu->threads[n_cpu], sizeof(cpu_set_t), cpuset);
+            pthread_setaffinity_np(twin_thpool_p->thpool_cpu->threads[n_cpu], sizeof(cpu_set_t), &cpuset);
             n_cpu++;
         }
         else if (n_gpu < thread_num_gpu)
         {
-            pthread_setaffinity_np(twin_thpool_p->thpool_gpu->threads[n_gpu], sizeof(cpu_set_t), cpuset);
+            pthread_setaffinity_np(twin_thpool_p->thpool_gpu->threads[n_gpu], sizeof(cpu_set_t), &cpuset);
             n_gpu++;
         }
     }
@@ -61,9 +61,9 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
 
     int reflag = 0;
 
-    if (gpu->jobqueue.total_time < cpu->jobqueue.total_time)
+    if (gpu->jobqueue.total_time <= cpu->jobqueue.total_time)
     {
-        thpool_add_work(gpu, function_gpu, (void *)arg_p, arg_p->layer.exe_time_gpu);
+        arg_p->flag = 1;
         reflag = 1;
     }
     else
@@ -71,13 +71,30 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
         if (cpu_time + get_thread_min_time(cpu) < gpu_time + get_thread_min_time(gpu))
         {
             reflag = 0;
-            thpool_add_work(cpu, function, (void *)arg_p, arg_p->layer.exe_time);
+            arg_p->flag = 0;
         }
         else
         {
+            arg_p->flag = 1;
             reflag = 1;
-            thpool_add_work(gpu, function, (void *)arg_p, arg_p->layer.exe_time_gpu);
         }
+    }
+
+    if (reflag == 0)
+    {
+        if (flag == 1)
+        {
+            cuda_pull_array(arg_p->net.input_gpu, arg_p->net.input, arg_p->net.inputs * arg_p->net.batch);
+        }
+        thpool_add_work(cpu, function, (void *)arg_p, arg_p->layer.exe_time);
+    }
+    else if (reflag == 1)
+    {
+        if (flag == 0)
+        {
+            cuda_push_array(arg_p->net.input_gpu, arg_p->net.input, ((arg_p->net).inputs) * ((arg_p->net).batch));
+        }
+        thpool_add_work(gpu, function, (void *)arg_p, arg_p->layer.exe_time_gpu);
     }
 
     return reflag;

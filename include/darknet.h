@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
+#include "thpool.h"
 #include "thpool_ex.h"
-
 #ifdef GPU
 #define BLOCK 512
 
@@ -27,7 +27,7 @@ extern "C"
     extern int gpu_index;
     extern twin_thpool *twin_thp;
 #define THREAD_NUM_POOL 8
-#define n_net 2  //hojin 8->2
+#define n_net 16 //hojin 8->2
 #define n_loop 4 //hojin # of loop in classifier2
 #ifdef THREAD
     extern pthread_cond_t *cond_t;
@@ -396,7 +396,7 @@ extern "C"
         size_t workspace_size;
         double exe_time;
 #ifdef GPU
-        double ext_time_gpu;
+        double exe_time_gpu;
         int *indexes_gpu;
 
         float *z_gpu;
@@ -913,8 +913,8 @@ extern "C"
     } test;
     typedef struct _netlayer
     {
-        network* net;
-        layer *layer;
+        network net;
+        layer layer;
         int flag;
     } netlayer;
 

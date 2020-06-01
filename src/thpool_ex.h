@@ -1,8 +1,6 @@
 #ifndef THPOOL_EX_H
 #define THPOOL_EX_H
 
-#include "thpool.h"
-
 typedef struct twin_thpool
 {
     threadpool thpool_cpu;
