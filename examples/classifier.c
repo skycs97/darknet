@@ -707,7 +707,7 @@ void *predict_classifier2(test *input)
     if (net->hierarchy)
         hierarchy_predictions(predictions, net->outputs, net->hierarchy, 1, 1);
     top_k(predictions, net->outputs, top, indexes);
-    fprintf(stderr, "network : %s: Predicted in %lf seconds.\n", input->netName, what_time_is_it_now() - time);
+    fprintf(stderr, "network : %s - %d : Predicted in %lf seconds.\n", input->netName, net->index_n, what_time_is_it_now() - time);
     for (i = 0; i < top; ++i)
     {
         int index = indexes[i];

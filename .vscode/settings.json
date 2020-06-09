@@ -6,7 +6,12 @@
         "shortcut_layer.h": "c",
         "upsample_layer.h": "c",
         "softmax_layer.h": "c",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "tuple": "c",
+        "type_traits": "c",
+        "functional": "c",
+        "utility": "c",
+        "random": "c"
     },
     "C_Cpp.dimInactiveRegions": false
 }

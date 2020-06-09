@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include "thpool.h"
 #include "thpool_ex.h"
+#include "cuda.h"
 
 #include <stdio.h>
 
@@ -60,7 +61,7 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
     double gpu_time = gpu->jobqueue.total_time;
 
     int reflag = 0;
-
+    int a = 0;
     if (gpu->jobqueue.total_time <= cpu->jobqueue.total_time)
     {
         arg_p->flag = 1;
@@ -85,6 +86,7 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
         if (flag == 1)
         {
             cuda_pull_array(arg_p->net.input_gpu, arg_p->net.input, arg_p->net.inputs * arg_p->net.batch);
+            //printf("gpu->cpu - %d\n", arg_p->net.index_n);
         }
         thpool_add_work(cpu, function, (void *)arg_p, arg_p->layer.exe_time);
     }
@@ -93,6 +95,7 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
         if (flag == 0)
         {
             cuda_push_array(arg_p->net.input_gpu, arg_p->net.input, ((arg_p->net).inputs) * ((arg_p->net).batch));
+            //printf("cpu->gpu - %d\n", arg_p->net.index_n);
         }
         thpool_add_work(gpu, function, (void *)arg_p, arg_p->layer.exe_time_gpu);
     }
