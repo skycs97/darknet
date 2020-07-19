@@ -201,11 +201,11 @@ void forward_function(netlayer *input)
 {
     pthread_mutex_lock(&mutex_t[input->net.index_n]);
 
+    //input->flag = 0;
     if (input->flag == 1)
     {
         if (input->layer.delta_gpu)
         {
-
             fill_gpu(input->layer.outputs * input->layer.batch, 0, input->layer.delta_gpu, 1);
         }
         input->layer.forward_gpu_thread(input);
@@ -250,6 +250,7 @@ void forward_network(network *netp)
 
         nl->layer = l;
         nl->net = net;
+
         //cuda_push_array(nl->net.input_gpu, nl->net.input, nl->net.inputs * nl->net.batch);
         lastFlag = add_job(twin_thp, forward_function, nl, lastFlag);
         //printf("net %d - flag %d\n", net.index_n, lastFlag);

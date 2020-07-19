@@ -20,9 +20,9 @@ ALIB=libdarknet.a
 EXEC=darknet
 OBJDIR=./obj/
 
-CC=gcc -lpthread
+CC=gcc -lpthread -march=native
 CPP=g++
-NVCC=nvcc 
+NVCC=nvcc --fmad=false
 AR=ar
 ARFLAGS=rcs
 OPTS=-Ofast

@@ -525,21 +525,21 @@ int main()
 
     char **names = get_labels(name_list);
 
-    char buff[256];
-    char *input = buff;
+    char *buff = "data/eagle.jpg";
+    //char *input = buff;
     test *net_input_des[n_net];
     test *net_input_res[n_net];
 
-    while (1)
-    {
-        printf("Enter Image Path: ");
-        fflush(stdout);
-        input = fgets(input, 256, stdin);
-        if (!input)
-            continue;
-        strtok(input, "\n");
-        break;
-    }
+    // while (1)
+    // {
+    //     printf("Enter Image Path: ");
+    //     fflush(stdout);
+    //     input = fgets(input, 256, stdin);
+    //     if (!input)
+    //         continue;
+    //     strtok(input, "\n");
+    //     break;
+    // }
 
     image im = load_image_color(buff, 0, 0);
 
@@ -563,7 +563,7 @@ int main()
     {
         net_input_des[i] = (test *)malloc(sizeof(test));
         net_input_des[i]->net = denseNetwork[i];
-        net_input_des[i]->input_path = input;
+        net_input_des[i]->input_path = buff;
         net_input_des[i]->names = names;
         net_input_des[i]->netName = denseName;
 
@@ -579,7 +579,7 @@ int main()
     {
         net_input_res[i] = (test *)malloc(sizeof(test));
         net_input_res[i]->net = resNetwork[i];
-        net_input_res[i]->input_path = input;
+        net_input_res[i]->input_path = buff;
         net_input_res[i]->names = names;
         net_input_res[i]->netName = resName;
 

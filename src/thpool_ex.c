@@ -60,28 +60,32 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
     double cpu_time = cpu->jobqueue.total_time;
     double gpu_time = gpu->jobqueue.total_time;
 
-    int reflag = 0;
+    //int reflag = 0;
     int a = 0;
     if (gpu->jobqueue.total_time <= cpu->jobqueue.total_time)
     {
         arg_p->flag = 1;
-        reflag = 1;
+        //reflag = 1;
     }
     else
     {
         if (cpu_time + get_thread_min_time(cpu) < gpu_time + get_thread_min_time(gpu))
         {
-            reflag = 0;
+            //reflag = 0;
             arg_p->flag = 0;
         }
         else
         {
             arg_p->flag = 1;
-            reflag = 1;
+            //reflag = 1;
         }
     }
+    // if (arg_p->layer.type == CONVOLUTIONAL)
+    //     arg_p->flag = 1;
+    // else
+    //     arg_p->flag = 0;
 
-    if (reflag == 0)
+    if (arg_p->flag == 0)
     {
         if (flag == 1)
         {
@@ -90,7 +94,7 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
         }
         thpool_add_work(cpu, function, (void *)arg_p, arg_p->layer.exe_time);
     }
-    else if (reflag == 1)
+    else if (arg_p->flag == 1)
     {
         if (flag == 0)
         {
@@ -100,7 +104,7 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
         thpool_add_work(gpu, function, (void *)arg_p, arg_p->layer.exe_time_gpu);
     }
 
-    return reflag;
+    return arg_p->flag;
 }
 
 double get_thread_min_time(threadpool thpool)
