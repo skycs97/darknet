@@ -434,3 +434,5 @@ MigrationBackup/
 darknet
 .vscode/settings.json
 .vscode/settings.json
+Makefile
+darknet
