@@ -27,8 +27,8 @@ extern "C"
     extern int gpu_index;
     extern twin_thpool *twin_thp;
 #define THREAD_NUM_POOL 8
-#define n_net 2  //hojin 8->2
-#define n_loop 4 //hojin # of loop in classifier2
+#define n_net 16  //hojin 8->2
+#define n_loop 16 //hojin # of loop in classifier2
 #ifdef THREAD
     extern pthread_cond_t *cond_t;
     extern pthread_mutex_t *mutex_t;

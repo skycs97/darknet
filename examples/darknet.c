@@ -481,7 +481,7 @@ int main()
 #endif
 
 #ifdef THREAD
-    twin_thp = twin_thpool_init(7, 1);
+    twin_thp = twin_thpool_init(4, 4);
 #endif
 
     //char** vgg = {"darknet", "classfier", "predict", "cfg/imagenet1k.data", "cfg/","", "data/eagle.jpg"};

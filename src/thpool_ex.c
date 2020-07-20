@@ -52,7 +52,7 @@ twin_thpool *twin_thpool_init(int thread_num_cpu, int thread_num_gpu)
     return twin_thpool_p;
 }
 
-int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_p, int flag)
+int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_p, int flag, int *routeOrShort)
 {
     threadpool cpu = twin_thpool_p->thpool_cpu;
     threadpool gpu = twin_thpool_p->thpool_gpu;
@@ -80,10 +80,43 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
             //reflag = 1;
         }
     }
-    // if (arg_p->layer.type == CONVOLUTIONAL)
-    //     arg_p->flag = 1;
-    // else
-    //     arg_p->flag = 0;
+    if (arg_p->layer.type == SHORTCUT)
+    {
+        int idx = arg_p->layer.index;
+
+        layer preLayer = arg_p->net.layers[idx];
+
+        if ((arg_p->flag == 0) && (routeOrShort[idx] == 1))
+        {
+            cuda_pull_array(preLayer.output_gpu, preLayer.output, preLayer.outputs);
+        }
+        else if ((arg_p->flag == 1) && (routeOrShort[idx] == 0))
+        {
+            cuda_push_array(preLayer.output_gpu, preLayer.output, preLayer.outputs);
+        }
+    }
+    else if (arg_p->layer.type == ROUTE)
+    {
+        int idx_1 = arg_p->layer.input_layers[0];
+        int idx_2 = arg_p->layer.input_layers[1];
+        layer preLayer = arg_p->net.layers[idx_1];
+        layer preLayer2 = arg_p->net.layers[idx_2];
+
+        if ((arg_p->flag == 0))
+        {
+            if (routeOrShort[idx_1] == 1)
+                cuda_pull_array(preLayer.output_gpu, preLayer.output, preLayer.outputs);
+            if (routeOrShort[idx_2] == 1)
+                cuda_pull_array(preLayer2.output_gpu, preLayer2.output, preLayer2.outputs);
+        }
+        else if ((arg_p->flag == 1))
+        {
+            if (routeOrShort[idx_1] == 0)
+                cuda_push_array(preLayer.output_gpu, preLayer.output, preLayer.outputs);
+            if (routeOrShort[idx_2] == 0)
+                cuda_push_array(preLayer2.output_gpu, preLayer2.output, preLayer2.outputs);
+        }
+    }
 
     if (arg_p->flag == 0)
     {
