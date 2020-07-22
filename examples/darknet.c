@@ -454,22 +454,10 @@ twin_thpool *twin_thp;
 pthread_cond_t *cond_t;
 pthread_mutex_t *mutex_t;
 int *cond_i;
+#define n_net 4 //hojin 8->2
 
 int main()
 {
-    //test_resize("data/bad.jpg");
-    //test_box();
-    //test_convolutional_layer();
-    /*
-    if(argc < 2){
-        fprintf(stderr, "usage: %s <function>\n", argv[0]);
-        return 0;
-    }
-    gpu_index = find_int_arg(argc, argv, "-i", 0);
-    if(find_arg(argc, argv, "-nogpu")) {
-        gpu_index = -1;
-    }*/
-
 #ifndef GPU
     gpu_index = -1;
 #else
@@ -529,17 +517,6 @@ int main()
     //char *input = buff;
     test *net_input_des[n_net];
     test *net_input_res[n_net];
-
-    // while (1)
-    // {
-    //     printf("Enter Image Path: ");
-    //     fflush(stdout);
-    //     input = fgets(input, 256, stdin);
-    //     if (!input)
-    //         continue;
-    //     strtok(input, "\n");
-    //     break;
-    // }
 
     image im = load_image_color(buff, 0, 0);
 

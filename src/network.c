@@ -201,7 +201,6 @@ void forward_function(netlayer *input)
 {
     pthread_mutex_lock(&mutex_t[input->net.index_n]);
 
-    //input->flag = 0;
     if (input->flag == 1)
     {
         if (input->layer.delta_gpu)
@@ -213,15 +212,12 @@ void forward_function(netlayer *input)
     }
     else if (input->flag == 0)
     {
-        // printf("cputime~~~~~~~~~~~~~~~~~~~~~~\n");
         if (input->layer.delta)
         {
             fill_cpu(input->layer.outputs * input->layer.batch, 0, input->layer.delta, 1);
         }
         input->layer.forward_thread(input);
-        // cuda_push_array(input->layer.output_gpu, input->layer.output, input->layer.outputs * input->layer.batch);
     }
-    //printf("flag - %d\n", input->flag);
     cond_i[input->net.index_n] = 0;
     pthread_cond_signal(&cond_t[input->net.index_n]);
     pthread_mutex_unlock(&mutex_t[input->net.index_n]);
@@ -238,7 +234,6 @@ void forward_network(network *netp)
     int lastFlag = 0;
     cuda_set_device(net.gpu_index);
 
-    // netlayer *nl = (netlayer *)malloc(sizeof(netlayer));
     int b = 0;
     int type_i[100];
     LAYER_TYPE type[100];
@@ -247,10 +242,6 @@ void forward_network(network *netp)
 
     for (i = 0; i < net.n; ++i)
     {
-        // cuda_push_array(net.input_gpu, net.input, net.inputs * net.batch);
-        //printf("%d\n", i);
-        // cuda_push_array(net.input_gpu, net.input, net.inputs * net.batch);
-
         pthread_mutex_lock(&mutex_t[net.index_n]);
         cond_i[net.index_n] = 1;
         net.index = i;
@@ -261,38 +252,20 @@ void forward_network(network *netp)
         nl.net = net;
         nl.flag = 0;
 
-        //cuda_push_array(nl->net.input_gpu, nl->net.input, nl->net.inputs * nl->net.batch);
         lastFlag = add_job(twin_thp, forward_function, &nl, lastFlag, routeOrShort);
         routeOrShort[i] = lastFlag;
 
-        //printf("net %d - flag %d\n", net.index_n, lastFlag);
         while (cond_i[net.index_n] == 1)
         {
             pthread_cond_wait(&cond_t[net.index_n], &mutex_t[net.index_n]);
         }
-        if (lastFlag == 0)
-        {
-            type[b] = l.type;
-            type_i[b] = i;
-            b++;
-        }
-        //if (lastFlag == 0)
-        //{
-        //cuda_pull_array(nl->layer.output_gpu, nl->layer.output, nl->layer.outputs * nl->layer.batch);
+
         net.input = l.output;
         net.input_gpu = l.output_gpu;
         net.inputs = l.outputs;
-        //net.batch = nl->layer.batch;
+
         pthread_mutex_unlock(&mutex_t[net.index_n]);
     }
-
-    //printf("%d - cpu %d\n", net.index_n, b);
-    int c = 0;
-    // for (c = 0; c < b; c++)
-    // {
-    //     printf("%d - %s - %d\n", net.index_n, get_layer_string(type[c]), type_i[c]);
-    // }
-
     if (lastFlag == 1)
         pull_network_output(netp);
 
