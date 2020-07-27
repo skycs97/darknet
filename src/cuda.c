@@ -127,6 +127,30 @@ float *cuda_make_array(float *x, size_t n)
     return x_gpu;
 }
 
+float *cuda_make_array_2(float *x, size_t n)
+{
+    float *x_gpu;
+    size_t size = sizeof(float) * n;
+    cudaError_t status; // = cudaMalloc((void **)&x_gpu, size);
+
+    status = cudaHostGetDevicePointer((void **)&x_gpu, (void *)x, 0);
+
+    check_error(status);
+    if (x)
+    {
+        //status = cudaMemcpy(x_gpu, x, size, cudaMemcpyHostToDevice);
+        check_error(status);
+    }
+    else
+    {
+
+        fill_gpu(n, 0, x_gpu, 1);
+    }
+    if (!x_gpu)
+        error("Cuda malloc failed\n");
+    return x_gpu;
+}
+
 void cuda_random(float *x_gpu, size_t n)
 {
     static curandGenerator_t gen[16];

@@ -60,69 +60,66 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
     double cpu_time = cpu->jobqueue.total_time;
     double gpu_time = gpu->jobqueue.total_time;
 
-    //int reflag = 0;
     int a = 0;
     if (gpu->jobqueue.total_time <= cpu->jobqueue.total_time)
     {
         arg_p->flag = 1;
-        //reflag = 1;
     }
     else
     {
         if (cpu_time + get_thread_min_time(cpu) < gpu_time + get_thread_min_time(gpu))
         {
-            //reflag = 0;
             arg_p->flag = 0;
         }
         else
         {
             arg_p->flag = 1;
-            //reflag = 1;
         }
     }
-    if (arg_p->layer.type == SHORTCUT)
-    {
-        int idx = arg_p->layer.index;
 
-        layer preLayer = arg_p->net.layers[idx];
+    // if (arg_p->layer.type == SHORTCUT)
+    // {
+    //     int idx = arg_p->layer.index;
 
-        if ((arg_p->flag == 0) && (routeOrShort[idx] == 1))
-        {
-            cuda_pull_array(preLayer.output_gpu, preLayer.output, preLayer.outputs);
-        }
-        else if ((arg_p->flag == 1) && (routeOrShort[idx] == 0))
-        {
-            cuda_push_array(preLayer.output_gpu, preLayer.output, preLayer.outputs);
-        }
-    }
-    else if (arg_p->layer.type == ROUTE)
-    {
-        int idx_1 = arg_p->layer.input_layers[0];
-        int idx_2 = arg_p->layer.input_layers[1];
-        layer preLayer = arg_p->net.layers[idx_1];
-        layer preLayer2 = arg_p->net.layers[idx_2];
+    //     layer preLayer = arg_p->net.layers[idx];
 
-        if ((arg_p->flag == 0))
-        {
-            if (routeOrShort[idx_1] == 1)
-                cuda_pull_array(preLayer.output_gpu, preLayer.output, preLayer.outputs);
-            if (routeOrShort[idx_2] == 1)
-                cuda_pull_array(preLayer2.output_gpu, preLayer2.output, preLayer2.outputs);
-        }
-        else if ((arg_p->flag == 1))
-        {
-            if (routeOrShort[idx_1] == 0)
-                cuda_push_array(preLayer.output_gpu, preLayer.output, preLayer.outputs);
-            if (routeOrShort[idx_2] == 0)
-                cuda_push_array(preLayer2.output_gpu, preLayer2.output, preLayer2.outputs);
-        }
-    }
+    //     if ((arg_p->flag == 0) && (routeOrShort[idx] == 1))
+    //     {
+    //         cuda_pull_array(preLayer.output_gpu, preLayer.output, preLayer.outputs);
+    //     }
+    //     else if ((arg_p->flag == 1) && (routeOrShort[idx] == 0))
+    //     {
+    //         cuda_push_array(preLayer.output_gpu, preLayer.output, preLayer.outputs);
+    //     }
+    // }
+    // else if (arg_p->layer.type == ROUTE)
+    // {
+    //     int idx_1 = arg_p->layer.input_layers[0];
+    //     int idx_2 = arg_p->layer.input_layers[1];
+    //     layer preLayer = arg_p->net.layers[idx_1];
+    //     layer preLayer2 = arg_p->net.layers[idx_2];
+
+    //     if ((arg_p->flag == 0))
+    //     {
+    //         if (routeOrShort[idx_1] == 1)
+    //             cuda_pull_array(preLayer.output_gpu, preLayer.output, preLayer.outputs);
+    //         if (routeOrShort[idx_2] == 1)
+    //             cuda_pull_array(preLayer2.output_gpu, preLayer2.output, preLayer2.outputs);
+    //     }
+    //     else if ((arg_p->flag == 1))
+    //     {
+    //         if (routeOrShort[idx_1] == 0)
+    //             cuda_push_array(preLayer.output_gpu, preLayer.output, preLayer.outputs);
+    //         if (routeOrShort[idx_2] == 0)
+    //             cuda_push_array(preLayer2.output_gpu, preLayer2.output, preLayer2.outputs);
+    //     }
+    // }
 
     if (arg_p->flag == 0)
     {
         if (flag == 1)
         {
-            cuda_pull_array(arg_p->net.input_gpu, arg_p->net.input, arg_p->net.inputs * arg_p->net.batch);
+            //cuda_pull_array(arg_p->net.input_gpu, arg_p->net.input, arg_p->net.inputs * arg_p->net.batch);
             //printf("gpu->cpu - %d\n", arg_p->net.index_n);
         }
         thpool_add_work(cpu, function, (void *)arg_p, arg_p->layer.exe_time);
@@ -131,7 +128,7 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
     {
         if (flag == 0)
         {
-            cuda_push_array(arg_p->net.input_gpu, arg_p->net.input, ((arg_p->net).inputs) * ((arg_p->net).batch));
+            //cuda_push_array(arg_p->net.input_gpu, arg_p->net.input, ((arg_p->net).inputs) * ((arg_p->net).batch));
             //printf("cpu->gpu - %d\n", arg_p->net.index_n);
         }
         thpool_add_work(gpu, function, (void *)arg_p, arg_p->layer.exe_time_gpu);

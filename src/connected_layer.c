@@ -29,7 +29,8 @@ layer make_connected_layer(int batch, int inputs, int outputs, ACTIVATION activa
     l.out_w = 1;
     l.out_c = outputs;
 
-    l.output = calloc(batch * outputs, sizeof(float));
+    //l.output = calloc(batch * outputs, sizeof(float));
+    cudaHostAlloc((void **)&l.output, batch * outputs * sizeof(float *), cudaHostAllocMapped);
     l.delta = calloc(batch * outputs, sizeof(float));
 
     l.weight_updates = calloc(inputs * outputs, sizeof(float));
@@ -102,7 +103,7 @@ layer make_connected_layer(int batch, int inputs, int outputs, ACTIVATION activa
     l.weight_updates_gpu = cuda_make_array(l.weight_updates, outputs * inputs);
     l.bias_updates_gpu = cuda_make_array(l.bias_updates, outputs);
 
-    l.output_gpu = cuda_make_array(l.output, outputs * batch);
+    l.output_gpu = cuda_make_array_2(l.output, outputs * batch);
     l.delta_gpu = cuda_make_array(l.delta, outputs * batch);
     if (adam)
     {

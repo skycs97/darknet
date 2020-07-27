@@ -36,7 +36,8 @@ maxpool_layer make_maxpool_layer(int batch, int h, int w, int c, int size, int s
     l.stride = stride;
     int output_size = l.out_h * l.out_w * l.out_c * batch;
     l.indexes = calloc(output_size, sizeof(int));
-    l.output = calloc(output_size, sizeof(float));
+    //l.output = calloc(output_size, sizeof(float));
+    cudaHostAlloc((void **)&l.output, batch * output_size * sizeof(float *), cudaHostAllocMapped);
     l.delta = calloc(output_size, sizeof(float));
     l.forward = forward_maxpool_layer;
     l.backward = backward_maxpool_layer;
@@ -49,7 +50,7 @@ maxpool_layer make_maxpool_layer(int batch, int h, int w, int c, int size, int s
     l.forward_gpu = forward_maxpool_layer_gpu;
     l.backward_gpu = backward_maxpool_layer_gpu;
     l.indexes_gpu = cuda_make_int_array(0, output_size);
-    l.output_gpu = cuda_make_array(l.output, output_size);
+    l.output_gpu = cuda_make_array_2(l.output, output_size);
 #ifdef THREAD
     l.forward_gpu_thread = forward_maxpool_layer_gpu_thread;
 #endif

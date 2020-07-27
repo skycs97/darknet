@@ -734,6 +734,7 @@ extern "C"
     void cuda_set_device(int n);
     void cuda_free(float *x_gpu);
     float *cuda_make_array(float *x, size_t n);
+    float *cuda_make_array_2(float *x, size_t n);
     void cuda_pull_array(float *x_gpu, float *x, size_t n);
     float cuda_mag_array(float *x_gpu, size_t n);
     void cuda_push_array(float *x_gpu, float *x, size_t n);

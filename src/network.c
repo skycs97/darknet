@@ -218,6 +218,8 @@ void forward_function(netlayer *input)
         }
         input->layer.forward_thread(input);
     }
+    cudaThreadSynchronize();
+
     cond_i[input->net.index_n] = 0;
     pthread_cond_signal(&cond_t[input->net.index_n]);
     pthread_mutex_unlock(&mutex_t[input->net.index_n]);
@@ -239,6 +241,7 @@ void forward_network(network *netp)
     LAYER_TYPE type[100];
 
     int routeOrShort[net.n];
+    cuda_push_array(net.input_gpu, net.input, net.inputs * net.batch);
 
     for (i = 0; i < net.n; ++i)
     {
@@ -260,6 +263,7 @@ void forward_network(network *netp)
             pthread_cond_wait(&cond_t[net.index_n], &mutex_t[net.index_n]);
         }
 
+        //printf("%d-%d %s - %d\n", net.index_n, i, get_layer_string(l.type), lastFlag);
         net.input = l.output;
         net.input_gpu = l.output_gpu;
         net.inputs = l.outputs;

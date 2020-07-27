@@ -24,8 +24,8 @@ route_layer make_route_layer(int batch, int n, int *input_layers, int *input_siz
     l.outputs = outputs;
     l.inputs = outputs;
     l.delta = calloc(outputs * batch, sizeof(float));
-    l.output = calloc(outputs * batch, sizeof(float));
-    ;
+    //l.output = calloc(outputs * batch, sizeof(float));
+    cudaHostAlloc((void **)&l.output, batch * outputs * sizeof(float *), cudaHostAllocMapped);
 
     l.forward = forward_route_layer;
     l.backward = backward_route_layer;
@@ -42,7 +42,7 @@ route_layer make_route_layer(int batch, int n, int *input_layers, int *input_siz
     l.backward_gpu = backward_route_layer_gpu;
 
     l.delta_gpu = cuda_make_array(l.delta, outputs * batch);
-    l.output_gpu = cuda_make_array(l.output, outputs * batch);
+    l.output_gpu = cuda_make_array_2(l.output, outputs * batch);
 #endif
     return l;
 }

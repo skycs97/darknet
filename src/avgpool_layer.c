@@ -17,7 +17,8 @@ avgpool_layer make_avgpool_layer(int batch, int w, int h, int c)
     l.outputs = l.out_c;
     l.inputs = h * w * c;
     int output_size = l.outputs * batch;
-    l.output = calloc(output_size, sizeof(float));
+    //l.output = calloc(output_size, sizeof(float));
+    cudaHostAlloc((void **)&l.output, batch * output_size * sizeof(float *), cudaHostAllocMapped);
     l.delta = calloc(output_size, sizeof(float));
     l.forward = forward_avgpool_layer;
     l.backward = backward_avgpool_layer;
@@ -32,7 +33,7 @@ avgpool_layer make_avgpool_layer(int batch, int w, int h, int c)
     l.forward_gpu_thread = forward_avgpool_layer_gpu_thread;
 #endif
     l.backward_gpu = backward_avgpool_layer_gpu;
-    l.output_gpu = cuda_make_array(l.output, output_size);
+    l.output_gpu = cuda_make_array_2(l.output, output_size);
     l.delta_gpu = cuda_make_array(l.delta, output_size);
     l.exe_time_gpu = avgTime_gpu(l.w, l.h, l.c);
 #endif

@@ -19,7 +19,8 @@ softmax_layer make_softmax_layer(int batch, int inputs, int groups)
     l.inputs = inputs;
     l.outputs = inputs;
     l.loss = calloc(inputs * batch, sizeof(float));
-    l.output = calloc(inputs * batch, sizeof(float));
+    //l.output = calloc(inputs * batch, sizeof(float));
+    cudaHostAlloc((void **)&l.output, batch * inputs * sizeof(float *), cudaHostAllocMapped);
     l.delta = calloc(inputs * batch, sizeof(float));
     l.cost = calloc(1, sizeof(float));
 
@@ -38,7 +39,7 @@ softmax_layer make_softmax_layer(int batch, int inputs, int groups)
 #endif
     l.backward_gpu = backward_softmax_layer_gpu;
 
-    l.output_gpu = cuda_make_array(l.output, inputs * batch);
+    l.output_gpu = cuda_make_array_2(l.output, inputs * batch);
     l.loss_gpu = cuda_make_array(l.loss, inputs * batch);
     l.delta_gpu = cuda_make_array(l.delta, inputs * batch);
 #endif
