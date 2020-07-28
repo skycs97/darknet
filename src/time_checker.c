@@ -1,3 +1,5 @@
+#include "time_checker.h"
+
 inline double convTime(int c, int size, int out_w, int out_h, int out_c)
 {
     return c * size * size * out_w * out_h * out_c * 3.5371923e-10;
