@@ -454,7 +454,7 @@ twin_thpool *twin_thp;
 pthread_cond_t *cond_t;
 pthread_mutex_t *mutex_t;
 int *cond_i;
-#define n_net 4 //hojin 8->2
+#define n_net 2 //hojin 8->2
 
 int main()
 {
