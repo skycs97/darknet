@@ -212,13 +212,14 @@ void forward_function(netlayer *input)
     }
     else if (input->flag == 0)
     {
+//	   printf("cpu~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`\n");
         if (input->layer.delta)
         {
             fill_cpu(input->layer.outputs * input->layer.batch, 0, input->layer.delta, 1);
         }
         input->layer.forward_thread(input);
     }
-    cudaThreadSynchronize();
+   // cudaThreadSynchronize();
 
     cond_i[input->net.index_n] = 0;
     pthread_cond_signal(&cond_t[input->net.index_n]);
@@ -271,7 +272,8 @@ void forward_network(network *netp)
         pthread_mutex_unlock(&mutex_t[net.index_n]);
     }
     if (lastFlag == 1)
-        pull_network_output(netp);
+	cudaDeviceSynchronize();
+//       pull_network_output(netp);
 
 #endif
 #endif
