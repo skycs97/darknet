@@ -80,6 +80,7 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
             //reflag = 1;
         }
     }
+    arg_p->flag = 1;
     if (arg_p->layer.type == SHORTCUT)
     {
         int idx = arg_p->layer.index;
@@ -117,7 +118,7 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
                 cuda_push_array(preLayer2.output_gpu, preLayer2.output, preLayer2.outputs);
         }
     }
-
+	
     if (arg_p->flag == 0)
     {
         if (flag == 1)

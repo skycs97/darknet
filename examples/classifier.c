@@ -717,7 +717,7 @@ void *predict_classifier2(test *input)
     if (r.data != im.data)
         free_image(r);
     free_image(im);
-    free_network(net);
+   // free_network(net);
     free(input);
     //hojin
     //while(1);
