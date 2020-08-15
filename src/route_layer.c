@@ -36,6 +36,8 @@ route_layer make_route_layer(int batch, int n, int *input_layers, int *input_siz
 #ifdef GPU
     l.exe_time_gpu = routeTime_gpu(input_sizes[0], input_sizes[1]);
     l.forward_gpu = forward_route_layer_gpu;
+    //lcs0815
+    l.gpu_util_weight = 9.05e-8;
 #ifdef THREAD
     l.forward_gpu_thread = forward_route_layer_gpu_thread;
 #endif

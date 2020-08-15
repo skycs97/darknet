@@ -37,6 +37,8 @@ layer make_shortcut_layer(int batch, int index, int w, int h, int c, int w2, int
 #ifdef GPU
     l.exe_time_gpu = shortTime_gpu(l.out_w, l.w, l.out_h, l.h, l.out_c, l.c);
     l.forward_gpu = forward_shortcut_layer_gpu;
+    //lcs0815
+    l.gpu_util_weight = 1.42e-7;
 #ifdef THREAD
     l.forward_gpu_thread = forward_shortcut_layer_gpu_thread;
 #endif

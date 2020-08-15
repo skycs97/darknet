@@ -91,6 +91,8 @@ layer make_connected_layer(int batch, int inputs, int outputs, ACTIVATION activa
 #ifdef GPU
     l.exe_time_gpu = connectTime_gpu(l.inputs, l.outputs);
     l.forward_gpu = forward_connected_layer_gpu;
+    //lcs0815
+    l.gpu_util_weight = -1.08e-7;
 #ifdef THREAD
     l.forward_gpu_thread = forward_connected_layer_gpu_thread;
 #endif

@@ -471,6 +471,8 @@ extern "C"
         float *rand_gpu;
         float *squared_gpu;
         float *norms_gpu;
+        //lcs 0815
+        double gpu_util_weight;
 #ifdef CUDNN
         cudnnTensorDescriptor_t srcTensorDesc, dstTensorDesc;
         cudnnTensorDescriptor_t dsrcTensorDesc, ddstTensorDesc;

@@ -285,6 +285,8 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
 #ifdef GPU
     l.forward_gpu = forward_convolutional_layer_gpu;
     l.exe_time_gpu = convTime_gpu(l.c, l.size, l.out_w, l.out_h, l.out_c);
+    //lcs0815
+    l.gpu_util_weight = 3.08e-7;
 
 #ifdef THREAD
     l.forward_gpu_thread = forward_convolutional_layer_gpu_thread;
