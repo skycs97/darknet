@@ -20,19 +20,29 @@ inline double get_gpu_util_time(double gpu_util_weight, int gpuUtil)
 {
     return gpu_util_weight * gpuUtil;
 }
+
+//lcs 0816
+int type = 0; //0 cpu or gpu,   1 gpu,     2 cpu
 twin_thpool *twin_thpool_init(int thread_num_cpu, int thread_num_gpu)
 {
     twin_thpool *twin_thpool_p = (twin_thpool *)malloc(sizeof(twin_thpool));
 
-    if ((thread_num_cpu + thread_num_gpu) != 8)
+    if (thread_num_cpu == 0 && thread_num_gpu == 0)
     {
-        err("thread nums sum is not 8");
+        err("thread cpu==0  && gpu==0");
         free(twin_thpool_p);
         return NULL;
     }
+    //lcs 0816
+    if (thread_num_cpu > 0)
+        twin_thpool_p->thpool_cpu = thpool_init(thread_num_cpu);
+    else
+        type = 1;
 
-    twin_thpool_p->thpool_cpu = thpool_init(thread_num_cpu);
-    twin_thpool_p->thpool_gpu = thpool_init(thread_num_gpu);
+    if (thread_num_gpu > 0)
+        twin_thpool_p->thpool_gpu = thpool_init(thread_num_gpu);
+    else
+        type = 2;
 
     int n = 0;
     int n_cpu = 0;
@@ -62,40 +72,52 @@ twin_thpool *twin_thpool_init(int thread_num_cpu, int thread_num_gpu)
 int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_p, int flag, int *routeOrShort)
 {
     threadpool cpu = twin_thpool_p->thpool_cpu;
-
     threadpool gpu = twin_thpool_p->thpool_gpu;
-
-    double cpu_time = cpu->jobqueue.total_time;
-    //lcs 0815
-    int fd = open("/sys/devices/gpu.0/load", O_RDONLY);
+    //lcs 0816
+    double cpu_time, gpu_time;
+    int fd;
     char buffer[10];
-    read(fd, buffer, 4);
-    double gpu_time = gpu->jobqueue.total_time + get_gpu_util_time(arg_p->layer.gpu_util_weight, atoi(buffer));
-    close(fd);
+    switch (type)
+    {
+    case 0:
+        cpu_time = cpu->jobqueue.total_time;
+        //lcs 0815
+        fd = open("/sys/devices/gpu.0/load", O_RDONLY);
+        read(fd, buffer, 4);
+        gpu_time = gpu->jobqueue.total_time + get_gpu_util_time(arg_p->layer.gpu_util_weight, atoi(buffer));
+        close(fd);
 
-    int a = 0;
-    if (gpu->jobqueue.total_time <= cpu->jobqueue.total_time)
-    {
-        arg_p->flag = 1;
-        thpool_add_work(gpu, function, (void *)arg_p, arg_p->layer.exe_time_gpu);
-    }
-    else
-    {
-        if (cpu_time + get_thread_min_time(cpu) < gpu_time + get_thread_min_time(gpu))
-        {
-            arg_p->flag = 0;
-            thpool_add_work(cpu, function, (void *)arg_p, arg_p->layer.exe_time);
-        }
-        else
+        if (gpu->jobqueue.total_time <= cpu->jobqueue.total_time)
         {
             arg_p->flag = 1;
             thpool_add_work(gpu, function, (void *)arg_p, arg_p->layer.exe_time_gpu);
         }
-    }
-    if (arg_p->flag == 0 && flag == 1)
-    {
-
-        cudaThreadSynchronize();
+        else
+        {
+            if (cpu_time + get_thread_min_time(cpu) < gpu_time + get_thread_min_time(gpu))
+            {
+                arg_p->flag = 0;
+                thpool_add_work(cpu, function, (void *)arg_p, arg_p->layer.exe_time);
+            }
+            else
+            {
+                arg_p->flag = 1;
+                thpool_add_work(gpu, function, (void *)arg_p, arg_p->layer.exe_time_gpu);
+            }
+        }
+        if (arg_p->flag == 0 && flag == 1)
+        {
+            cudaThreadSynchronize();
+        }
+        break;
+    case 1:
+        arg_p->flag = 1;
+        thpool_add_work(gpu, function, (void *)arg_p, arg_p->layer.exe_time_gpu);
+        break;
+    case 2:
+        arg_p->flag = 0;
+        thpool_add_work(cpu, function, (void *)arg_p, arg_p->layer.exe_time);
+        break;
     }
 
     return arg_p->flag;
