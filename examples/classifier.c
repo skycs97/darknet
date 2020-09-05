@@ -686,6 +686,7 @@ void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *fi
 
 void *predict_classifier2(test *input)
 {
+//    FILE *fp = fopen("exe_time.txt","a");
     image im = load_image_color((char *)input->input_path, 0, 0);
     network *net = input->net;
 
@@ -696,7 +697,7 @@ void *predict_classifier2(test *input)
 
     int i = 0;
     char **names = input->names;
-    double time = what_time_is_it_now();
+    double time = what_time_is_it_now(),time2;
     int *indexes = calloc(top, sizeof(int));
 
     image r = letterbox_image(im, net->w, net->h);
@@ -707,7 +708,23 @@ void *predict_classifier2(test *input)
     if (net->hierarchy)
         hierarchy_predictions(predictions, net->outputs, net->hierarchy, 1, 1);
     top_k(predictions, net->outputs, top, indexes);
-    fprintf(stderr, "network : %s - %d : Predicted in %lf seconds.\n", input->netName, net->index_n, what_time_is_it_now() - time);
+    
+    time2 = what_time_is_it_now();
+    fprintf(stderr, "network : %s - %d : Predicted in %lf seconds.\n", input->netName, net->index_n, time2 - time);
+    char fileName[20];
+
+    sprintf(fileName, "%s-%d.txt", input->netName, net->index_n);
+    
+    FILE* fp = fopen(fileName, "a+");
+
+    if (fp){
+            fprintf(fp, "%lf\n", time2 - time);
+        }
+        else{
+            fprintf(stderr, "file open error\n");
+            exit(1);
+        }
+    fclose(fp);
     for (i = 0; i < top; ++i)
     {
         int index = indexes[i];
@@ -716,11 +733,14 @@ void *predict_classifier2(test *input)
     }
     if (r.data != im.data)
         free_image(r);
+    
+  //  fclose(fp);
     free_image(im);
     //free_network(net);
     free(input);
     //hojin
     //while(1);
+ 
 }
 
 void label_classifier(char *datacfg, char *filename, char *weightfile)

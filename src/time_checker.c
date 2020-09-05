@@ -35,11 +35,11 @@ inline double maxTime_gpu(int size, int out_w, int out_h, int out_c)
 }
 inline double routeTime(int input1, int input2)
 {
-    return input1 * -1.11e-9 + input2 * 2.24e-09 + 0.0007599;
+    return (double)input1 * -1.11e-9 + (double)input2 * 2.24e-09 + 0.0007599;
 }
 inline double routeTime_gpu(int input1, int input2)
 {
-    return input1 * -4.96893e-10 + input2 * 7.1213e-11 + 7.65e-5;
+    return (double)input1 * -4.96893e-10 + (double)input2 * 7.1213e-11 + 7.65e-5;
 }
 
 inline double shortTime(int w1, int w2, int h1, int h2, int c1, int c2)

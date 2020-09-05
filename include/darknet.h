@@ -26,14 +26,14 @@ extern "C"
 #define SECRET_NUM -1234
     extern int gpu_index;
     extern twin_thpool *twin_thp;
-#define THREAD_NUM_POOL 8
-#define n_loop 16 //hojin # of loop in classifier2
+#define THREAD_NUM_POOL 8 // no use
+#define n_loop 16 //hojin # of loop classifier2 no use
 #ifdef THREAD
     extern pthread_cond_t *cond_t;
     extern pthread_mutex_t *mutex_t;
     extern int *cond_i;
 #endif
-
+extern double gpu_total_time;
     /*��Ÿ������*/
     typedef struct
     {

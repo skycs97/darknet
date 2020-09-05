@@ -47,12 +47,13 @@ twin_thpool *twin_thpool_init(int thread_num_cpu, int thread_num_gpu)
     int n = 0;
     int n_cpu = 0;
     int n_gpu = 0;
+    int doro = 0;//kmsjames 2020 0817
     cpu_set_t cpuset;
 
     for (n = 0; n < thread_num_cpu + thread_num_gpu; n++)
     {
-        CPU_ZERO(&cpuset);
-        CPU_SET(n, &cpuset);
+	CPU_ZERO(&cpuset);
+        CPU_SET(doro, &cpuset); //kmsjames 2020 0817
 
         if (n_cpu < thread_num_cpu)
         {
@@ -64,6 +65,8 @@ twin_thpool *twin_thpool_init(int thread_num_cpu, int thread_num_gpu)
             pthread_setaffinity_np(twin_thpool_p->thpool_gpu->threads[n_gpu], sizeof(cpu_set_t), &cpuset);
             n_gpu++;
         }
+        //kmsjames 2020 0817 for CPU affinity
+	doro = (n+1)%8;
     }
 
     return twin_thpool_p;
@@ -79,36 +82,31 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
     char buffer[10];
     switch (type)
     {
-    case 0:
-        cpu_time = cpu->jobqueue.total_time;
-        //lcs 0815
+      case 0:
+        cpu_time = arg_p->layer.exe_time;
+        //lcsi 0815
         fd = open("/sys/devices/gpu.0/load", O_RDONLY);
         read(fd, buffer, 4);
-        gpu_time = gpu->jobqueue.total_time + get_gpu_util_time(arg_p->layer.gpu_util_weight, atoi(buffer));
+        arg_p->layer.exe_time_gpu = arg_p->layer.exe_time_gpu; get_gpu_util_time(arg_p->layer.gpu_util_weight, atoi(buffer));
         close(fd);
 
-        if (gpu->jobqueue.total_time <= cpu->jobqueue.total_time)
+        if (gpu_total_time+ arg_p->layer.exe_time_gpu <= cpu->jobqueue.total_time+cpu_time)
         {
             arg_p->flag = 1;
-            thpool_add_work(gpu, function, (void *)arg_p, arg_p->layer.exe_time_gpu);
+            thpool_add_work(gpu, function, (void *)arg_p, gpu_time);
+	    gpu_total_time += arg_p->layer.exe_time_gpu;
         }
-        else
-        {
-            if (cpu_time + get_thread_min_time(cpu) < gpu_time + get_thread_min_time(gpu))
-            {
-                arg_p->flag = 0;
-                thpool_add_work(cpu, function, (void *)arg_p, arg_p->layer.exe_time);
-            }
-            else
-            {
-                arg_p->flag = 1;
-                thpool_add_work(gpu, function, (void *)arg_p, arg_p->layer.exe_time_gpu);
-            }
-        }
-        if (arg_p->flag == 0 && flag == 1)
-        {
-            cudaThreadSynchronize();
-        }
+       else
+	{
+              
+
+//		     cudaMemcpyAsync(arg_p->net.input, arg_p->net.input_gpu, arg_p->net.inputs*sizeof(float), cudaMemcpyDeviceToHost, 0);
+            if(flag == 1)	       
+             	     cudaDeviceSynchronize();
+	       	arg_p->flag = 0;
+
+            thpool_add_work(cpu, function, (void *)arg_p, arg_p->layer.exe_time);
+	}        
         break;
     case 1:
         arg_p->flag = 1;
@@ -122,7 +120,6 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
 
     return arg_p->flag;
 }
-
 double get_thread_min_time(threadpool thpool)
 {
     int i = 0;

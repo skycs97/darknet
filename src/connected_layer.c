@@ -383,7 +383,7 @@ void forward_connected_layer_gpu_thread(netlayer *input)
     float *a = net.input_gpu;
     float *b = l.weights_gpu;
     float *c = l.output_gpu;
-    gemm_gpu(0, 1, m, n, k, 1, a, k, b, k, 1, c, n);
+    gemm_gpu_dd(0, 1, m, n, k, 1, a, k, b, k, 1, c, n,input->net.index_n);
 
     if (l.batch_normalize)
     {

@@ -28,6 +28,8 @@
 #define err(str)
 #endif
 
+#define RT_THREAD 1
+
 static volatile int threads_keepalive;
 static volatile int threads_on_hold;
 
@@ -280,6 +282,17 @@ int thpool_num_threads_working(thpool_ *thpool_p)
  */
 static int thread_init(thpool_ *thpool_p, struct thread **thread_p, int id)
 {
+#ifdef RT_THREAD
+        pthread_attr_t attr;
+        struct sched_param param;
+
+        pthread_attr_init(&attr);
+        pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
+        param.sched_priority = 99;
+        pthread_attr_setschedparam(&attr, &param);
+#endif
+
+
 
 	*thread_p = (struct thread *)malloc(sizeof(struct thread));
 	if (*thread_p == NULL)
@@ -291,7 +304,12 @@ static int thread_init(thpool_ *thpool_p, struct thread **thread_p, int id)
 	(*thread_p)->thpool_p = thpool_p;
 	(*thread_p)->id = id;
 
-	pthread_create(&(*thread_p)->pthread, NULL, (void *)thread_do, (*thread_p));
+#ifndef RT_THREAD
+        pthread_create(&(*thread_p)->pthread, NULL, (void *)thread_do, (*thread_p));
+#else
+        pthread_create(&(*thread_p)->pthread, &attr, (void *)thread_do, (*thread_p));
+#endif
+
 	pthread_detach((*thread_p)->pthread);
 	return 0;
 }
@@ -411,7 +429,7 @@ static int jobqueue_init(jobqueue *jobqueue_p)
 	{
 		return -1;
 	}
-
+	jobqueue_p->total_time = 0.0;
 	pthread_mutex_init(&(jobqueue_p->rwmutex), NULL);
 	bsem_init(jobqueue_p->has_jobs, 0);
 

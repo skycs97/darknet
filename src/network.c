@@ -199,7 +199,7 @@ network *make_network(int n)
 #ifdef GPU
 void forward_function(netlayer *input)
 {
-    pthread_mutex_lock(&mutex_t[input->net.index_n]);
+   pthread_mutex_lock(&mutex_t[input->net.index_n]);
 
     if (input->flag == 1)
     {
@@ -209,6 +209,7 @@ void forward_function(netlayer *input)
         }
 
         input->layer.forward_gpu_thread(input);
+	gpu_total_time-= input->layer.exe_time_gpu;
     }
     else if (input->flag == 0)
     {
@@ -219,10 +220,12 @@ void forward_function(netlayer *input)
         }
         input->layer.forward_thread(input);
     }
-   // cudaThreadSynchronize();
+  // cudaThreadSynchronize();
 
     cond_i[input->net.index_n] = 0;
+    
     pthread_cond_signal(&cond_t[input->net.index_n]);
+
     pthread_mutex_unlock(&mutex_t[input->net.index_n]);
 }
 #endif
@@ -243,11 +246,11 @@ void forward_network(network *netp)
 
     int routeOrShort[net.n];
     cuda_push_array(net.input_gpu, net.input, net.inputs * net.batch);
-
+	int c=0,g=0;
     for (i = 0; i < net.n; ++i)
     {
-        pthread_mutex_lock(&mutex_t[net.index_n]);
-        cond_i[net.index_n] = 1;
+   //     pthread_mutex_lock(&mutex_t[net.index_n]);
+       cond_i[net.index_n] = 1;
         net.index = i;
         layer l = net.layers[i];
         netlayer nl;
@@ -257,20 +260,27 @@ void forward_network(network *netp)
         nl.flag = 0;
 
         lastFlag = add_job(twin_thp, forward_function, &nl, lastFlag, routeOrShort);
-        routeOrShort[i] = lastFlag;
+       // routeOrShort[i] = lastFlag;
 
         while (cond_i[net.index_n] == 1)
         {
             pthread_cond_wait(&cond_t[net.index_n], &mutex_t[net.index_n]);
         }
-
-        //printf("%d-%d %s - %d\n", net.index_n, i, get_layer_string(l.type), lastFlag);
+	//if(lastFlag == 0)
+	       // printf("%d-%d %s - %d\n", net.index_n, i, get_layer_string(l.type), lastFlag);
+	if(lastFlag == 0){
+		c++;
+	}
+	else{
+		g++;
+	}
         net.input = l.output;
         net.input_gpu = l.output_gpu;
         net.inputs = l.outputs;
 
-        pthread_mutex_unlock(&mutex_t[net.index_n]);
+ //       pthread_mutex_unlock(&mutex_t[net.index_n]);
     }
+  printf("%d cpu: %d gpu: %d\n", net.index_n, c, g);
     if (lastFlag == 1)
 	cudaDeviceSynchronize();
 //       pull_network_output(netp);
