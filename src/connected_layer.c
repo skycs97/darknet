@@ -375,8 +375,12 @@ void forward_connected_layer_gpu_thread(netlayer *input)
     network net = input->net;
     layer l = input->layer;
 
-    fill_gpu(l.outputs * l.batch, 0, l.output_gpu, 1);
-
+    #ifdef STREAM
+        //stream apply connected
+        fill_gpu_stream(l.outputs*l.batch, 0, l.output_gpu, 1, net.index_n);
+    #else
+        fill_gpu(l.outputs*l.batch, 0, l.output_gpu, 1);
+    #endif
     int m = l.batch;
     int k = l.inputs;
     int n = l.outputs;
@@ -384,6 +388,7 @@ void forward_connected_layer_gpu_thread(netlayer *input)
     float *b = l.weights_gpu;
     float *c = l.output_gpu;
     gemm_gpu_dd(0, 1, m, n, k, 1, a, k, b, k, 1, c, n,input->net.index_n);
+    //cuda_synchronize(net.index_n, __LINE__);
 
     if (l.batch_normalize)
     {
@@ -391,9 +396,18 @@ void forward_connected_layer_gpu_thread(netlayer *input)
     }
     else
     {
-        add_bias_gpu(l.output_gpu, l.biases_gpu, l.batch, l.outputs, 1);
+        #ifdef STREAM
+            add_bias_gpu_stream(l.output_gpu, l.biases_gpu, l.batch, l.outputs, 1, net.index_n);
+        #else
+            add_bias_gpu(l.output_gpu, l.biases_gpu, l.batch, l.outputs, 1);
+        #endif
     }
-    activate_array_gpu(l.output_gpu, l.outputs * l.batch, l.activation);
+    #ifdef STREAM
+        //stream apply activate
+        activate_array_gpu_stream(l.output_gpu, l.outputs*l.batch, l.activation, net.index_n);
+    #else
+        activate_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation);
+    #endif
 }
 #endif
 

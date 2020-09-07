@@ -469,81 +469,69 @@ double gpu_total_time = 0;
 //kmsjames 2020 0819 for pwr mon
 static int pwr_ind=0;
 static int pwr_ind_finish =0;
-void *pwr_mon_do(void)
-{
-	char buffer[10];
-	int fd[6];
-	int val[6];
-	int total_pwr=0;
+// void *pwr_mon_do(void)
+// {
+// 	char buffer[10];
+// 	int fd[6];
+// 	int val[6];
+// 	int total_pwr=0;
 
-        FILE *fp = fopen("total_pwr_cpu_gpu.txt","a");
+//         FILE *fp = fopen("total_pwr_cpu_gpu.txt","a");
 
-	while(1){
-		if(pwr_ind == 0) continue;
+// 	while(1){
+// 		if(pwr_ind == 0) continue;
 	
-		total_pwr = 0;	
-		fd[0] = open("/sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power0_input", O_RDONLY);
-		read(fd[0], buffer, 5);
-	 	val[0] = atoi(buffer);
+// 		total_pwr = 0;	
+// 		fd[0] = open("/sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power0_input", O_RDONLY);
+// 		read(fd[0], buffer, 5);
+// 	 	val[0] = atoi(buffer);
 		
-		fd[1] = open("/sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power1_input", O_RDONLY);
-		read(fd[1], buffer, 5);
-	 	val[1] = atoi(buffer);
+// 		fd[1] = open("/sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power1_input", O_RDONLY);
+// 		read(fd[1], buffer, 5);
+// 	 	val[1] = atoi(buffer);
 		
-		fd[2] = open("/sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power2_input", O_RDONLY);
-		read(fd[2], buffer, 5);
-	 	val[2] = atoi(buffer);
+// 		fd[2] = open("/sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power2_input", O_RDONLY);
+// 		read(fd[2], buffer, 5);
+// 	 	val[2] = atoi(buffer);
 		
-		fd[3] = open("/sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power0_input", O_RDONLY);
-		read(fd[3], buffer, 5);
-	 	val[3] = atoi(buffer);
+// 		fd[3] = open("/sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power0_input", O_RDONLY);
+// 		read(fd[3], buffer, 5);
+// 	 	val[3] = atoi(buffer);
 		
-		fd[4] = open("/sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power1_input", O_RDONLY);
-		read(fd[4], buffer, 5);
-	 	val[4] = atoi(buffer);
+// 		fd[4] = open("/sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power1_input", O_RDONLY);
+// 		read(fd[4], buffer, 5);
+// 	 	val[4] = atoi(buffer);
 		
-		fd[5] = open("/sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power2_input", O_RDONLY);
-		read(fd[5], buffer, 5);
-	 	val[5] = atoi(buffer);
+// 		fd[5] = open("/sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power2_input", O_RDONLY);
+// 		read(fd[5], buffer, 5);
+// 	 	val[5] = atoi(buffer);
 		
-		for(int nu=0; nu<6;nu++){
-			total_pwr += val[nu];	
-			close(fd[nu]);
-		}	
+// 		for(int nu=0; nu<6;nu++){
+// 			total_pwr += val[nu];	
+// 			close(fd[nu]);
+// 		}	
 
-		if (fp)
-    		{
-		        for(int nu =0; nu<6; nu++) fprintf(fp, " %d,",val[nu]);
-			fprintf(fp, "\n");
-			fprintf(fp, "total_pwr = %d\n", total_pwr);
-    		}
-    		else
-    		{
-        		fprintf(stderr, "file open error");
-        		exit(1);
-    		}
-		if(pwr_ind_finish == 1) break;
+// 		if (fp)
+//     		{
+// 		        for(int nu =0; nu<6; nu++) fprintf(fp, " %d,",val[nu]);
+// 			fprintf(fp, "\n");
+// 			fprintf(fp, "total_pwr = %d\n", total_pwr);
+//     		}
+//     		else
+//     		{
+//         		fprintf(stderr, "file open error");
+//         		exit(1);
+//     		}
+// 		if(pwr_ind_finish == 1) break;
 
-		usleep(10);
-	}
-	fclose(fp);	
-}
+// 		usleep(10);
+// 	}
+// 	fclose(fp);	
+// }
 
 
 int main()
 {
-  /* FILE *fp = fopen("exe_time.txt","a");
-   
-   if (fp)
-    {
-        fprintf(fp, "***** Des : %d , Res : %d , VGG : %d , Alex : %d *****\n", n_des, n_res, n_vgg, n_alex);
-	fprintf(fp, "-----------------------------------------------------(%d,%d)\n", cpu_thread, gpu_thread);
-    }
-    else
-    {
-        fprintf(stderr, "file open error");
-        exit(1);
-    }*/
 #ifndef GPU
     gpu_index = -1;
 #else
@@ -574,6 +562,7 @@ int main()
 
     int i = 0;
     int n_all = n_des+n_res+n_vgg+n_alex;
+    cudnn_handle_set_stream(n_all);
 #ifdef THREAD
     //변수 동적할당
     cond_t = (pthread_cond_t *)malloc(sizeof(pthread_cond_t) * n_all);
@@ -597,24 +586,24 @@ int main()
         resNetwork[k]->index_n = k + n_net;
     }
 #endif
-
-     for (unsigned int k = 0; k < n_des; k++)
+    int k;
+     for (k = 0; k < n_des; k++)
     {
         denseNetwork[k] = (network *)load_network("cfg/densenet201.cfg", "densenet201.weights", 0);
         denseNetwork[k]->index_n = k;
     }
 
-    for (unsigned int k = 0; k < n_res; k++)
+    for (k = 0; k < n_res; k++)
     {
         resNetwork[k] = (network *)load_network("cfg/resnet152.cfg", "resnet152.weights", 0);
         resNetwork[k]->index_n = k + n_des;
     }
-    for (unsigned int k = 0; k < n_vgg; k++)
+    for (k = 0; k < n_vgg; k++)
     {
         vggNetwork[k] = (network *)load_network("cfg/vgg-16.cfg", "vgg-16.weights", 0);
         vggNetwork[k]->index_n = k + n_des + n_res;
     }
-    for (unsigned int k = 0; k < n_alex; k++)
+    for (k = 0; k < n_alex; k++)
     {
         alexNetwork[k] = (network *)load_network("cfg/alexnet.cfg", "alexnet.weights", 0);
         alexNetwork[k]->index_n = k + n_des + n_res + n_vgg;
@@ -744,19 +733,19 @@ int main()
     //fprintf(stderr, "\n execution Time : %lf\n", what_time_is_it_now() - time);
 
 
-    for (int i = 0; i < n_des; i++)
+    for (i = 0; i < n_des; i++)
     {
         pthread_join(networkArray_des[i], NULL);
     }
-    for (int i = 0; i < n_res; i++)
+    for (i = 0; i < n_res; i++)
     {
         pthread_join(networkArray_res[i], NULL);
     }
-    for (int i = 0; i < n_vgg; i++)
+    for (i = 0; i < n_vgg; i++)
     {
         pthread_join(networkArray_vgg[i], NULL);
     }
-    for (int i = 0; i < n_alex; i++)
+    for (i = 0; i < n_alex; i++)
     {
         pthread_join(networkArray_alex[i], NULL);
     }

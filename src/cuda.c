@@ -49,6 +49,72 @@ void check_error(cudaError_t status)
     }
 }
 
+//cs 0904 stream
+void check_error_line(cudaError_t status, int line)
+{
+    //cudaDeviceSynchronize();
+    cudaError_t status2 = cudaGetLastError();
+    if (status != cudaSuccess)
+    {
+        const char *s = cudaGetErrorString(status);
+        char buffer[256];
+        printf("CUDA Error: %s, LINE : %d\n", s, line);
+        assert(0);
+        snprintf(buffer, 256, "CUDA Error: %s", s);
+        error(buffer);
+    }
+    if (status2 != cudaSuccess)
+    {
+        const char *s = cudaGetErrorString(status);
+        char buffer[256];
+        printf("CUDA Error Prev: %s, LINE : %d\n", s, line);
+        assert(0);
+        snprintf(buffer, 256, "CUDA Error Prev: %s, LINE : %d\n", s, line);
+        error(buffer);
+    }
+}
+
+static cudaStream_t stream[50];
+static int init_stream[50] ={ 0, };
+
+void cudnn_handle_set_stream(int num)
+{
+    int i;
+    for (i = 0; i < num; i++)
+    {
+        cudaStreamCreateWithFlags(&(stream[i]), cudaStreamNonBlocking);
+        //cudaStreamCreate(&(stream[i]));
+
+        
+        init_stream[i] = 1;
+    }
+}
+
+void cuda_synchronize(int id, int line)
+{
+    cudaError_t status = cudaStreamSynchronize(stream[id]);
+    check_error_line(status, line);
+}
+cudaStream_t usedstream(int id)
+{
+    return stream[id];
+}
+
+void cuda_pull_array_stream(float *x_gpu, float *x, size_t n, int id)
+{
+    size_t size = sizeof(float) * n;
+    cudaError_t status = cudaMemcpyAsync(x, x_gpu, size, cudaMemcpyDeviceToHost, stream[id]);
+    check_error(status);
+}
+
+void cuda_push_array_stream(float *x_gpu, float *x, size_t n, int id)
+{
+    size_t size = sizeof(float) * n;
+    cudaError_t status = cudaMemcpyAsync(x_gpu, x, size, cudaMemcpyHostToDevice, stream[id]);
+    check_error(status);
+}
+
+
 dim3 cuda_gridsize(size_t n)
 {
     size_t k = (n - 1) / BLOCK + 1;
@@ -59,7 +125,7 @@ dim3 cuda_gridsize(size_t n)
         x = ceil(sqrt(k));
         y = (n - 1) / (x * BLOCK) + 1;
     }
-    dim3 d = {x, y, 1};
+    dim3 d ={ x, y, 1 };
     //printf("%ld %ld %ld %ld\n", n, x, y, x*y*BLOCK);
     return d;
 }
@@ -67,7 +133,7 @@ dim3 cuda_gridsize(size_t n)
 #ifdef CUDNN
 cudnnHandle_t cudnn_handle()
 {
-    static int init[16] = {0};
+    static int init[16] ={ 0 };
     static cudnnHandle_t handle[16];
     int i = cuda_get_device();
     if (!init[i])
@@ -79,7 +145,7 @@ cudnnHandle_t cudnn_handle()
 }
 #endif
 
-static int init_blas[32] = {0};
+static int init_blas[32] ={ 0 };
 static cublasHandle_t handle_blas[32];
 
 cublasHandle_t blas_handle_a(int idx)
@@ -88,15 +154,22 @@ cublasHandle_t blas_handle_a(int idx)
     if (!init_blas[i])
     {
         cublasCreate(&handle_blas[i]);
+        #ifdef STREAM
+            cublasSetStream(handle_blas[i], stream[i]);
+        #endif
         init_blas[i] = 1;
     }
 
     return handle_blas[i];
 }
 
+
+
+
+
 cublasHandle_t blas_handle()
 {
-    static int init[16] = {0};
+    static int init[16] ={ 0 };
     static cublasHandle_t handle[16];
     int i = cuda_get_device();
     if (!init[i])
@@ -113,6 +186,10 @@ float *cuda_make_array(float *x, size_t n)
     size_t size = sizeof(float) * n;
     cudaError_t status = cudaMalloc((void **)&x_gpu, size);
     check_error(status);
+//     #ifdef STREAM
+//     //2020 0311 doyoung
+//     cudaMemset(x_gpu, .0, size);
+// #endif
     if (x)
     {
         status = cudaMemcpy(x_gpu, x, size, cudaMemcpyHostToDevice);
@@ -149,12 +226,28 @@ float *cuda_make_array_2(float *x, size_t n)
     if (!x_gpu)
         error("Cuda malloc failed\n");
     return x_gpu;
+    // float *x_gpu;
+    // size_t size = sizeof(float) * n;
+    // cudaError_t status = cudaMalloc((void **)&x_gpu, size);
+    // check_error(status);
+    // if (x)
+    // {
+    //     status = cudaMemcpy(x_gpu, x, size, cudaMemcpyHostToDevice);
+    //     check_error(status);
+    // }
+    // else
+    // {
+    //     fill_gpu(n, 0, x_gpu, 1);
+    // }
+    // if (!x_gpu)
+    //     error("Cuda malloc failed\n");
+    // return x_gpu;
 }
 
 void cuda_random(float *x_gpu, size_t n)
 {
     static curandGenerator_t gen[16];
-    static int init[16] = {0};
+    static int init[16] ={ 0 };
     int i = cuda_get_device();
     if (!init[i])
     {

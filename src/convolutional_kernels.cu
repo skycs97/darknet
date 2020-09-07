@@ -135,6 +135,22 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network net)
     //if(l.dot > 0) dot_error_gpu(l);
     if(l.binary || l.xnor) swap_binary(&l);
 }
+
+
+#ifdef STREAM
+    void binarize_gpu_stream(float *x, int n, float *binary, int id)
+    {
+        binarize_kernel<<<cuda_gridsize(n), BLOCK, 0, usedstream(id)>>>(x, n, binary);
+        check_error(cudaPeekAtLastError());
+    }   
+    void binarize_weights_gpu_stream(float *weights, int n, int size, float *binary, int id)
+    {
+        binarize_weights_kernel<<<cuda_gridsize(n), BLOCK, 0, usedstream(id)>>>(weights, n, size, binary);
+        check_error(cudaPeekAtLastError());
+    }
+#endif
+
+
 #ifdef THREAD
 void forward_convolutional_layer_gpu_thread(netlayer* input)
 {
@@ -143,17 +159,33 @@ void forward_convolutional_layer_gpu_thread(netlayer* input)
     network net = input->net;
     layer l = input->layer;
  
-    
-    fill_gpu(l.outputs*l.batch, 0, l.output_gpu, 1);
+    #ifdef STREAM
+        //stream apply connected
+        fill_gpu_stream(l.outputs*l.batch, 0, l.output_gpu, 1,net.index_n);
+    #else
+        fill_gpu(l.outputs*l.batch, 0, l.output_gpu, 1);
+    #endif
     if(l.binary){
-        binarize_weights_gpu(l.weights_gpu, l.n, l.c/l.groups*l.size*l.size, l.binary_weights_gpu);
+        #ifdef STREAM
+            binarize_weights_gpu_stream(l.weights_gpu, l.n, l.c/l.groups*l.size*l.size, l.binary_weights_gpu, net.index_n);
+        #else
+            binarize_weights_gpu(l.weights_gpu, l.n, l.c/l.groups*l.size*l.size, l.binary_weights_gpu);
+        #endif
         swap_binary(&l);
     }
 
     if(l.xnor){
-        binarize_weights_gpu(l.weights_gpu, l.n, l.c/l.groups*l.size*l.size, l.binary_weights_gpu);
+        #ifdef STREAM
+            binarize_weights_gpu_stream(l.weights_gpu, l.n, l.c/l.groups*l.size*l.size, l.binary_weights_gpu, net.index_n);
+        #else
+            binarize_weights_gpu(l.weights_gpu, l.n, l.c/l.groups*l.size*l.size, l.binary_weights_gpu);
+        #endif
         swap_binary(&l);
-        binarize_gpu(net.input_gpu, l.c*l.h*l.w*l.batch, l.binary_input_gpu);
+        #ifdef STREAM
+            binarize_gpu_stream(net.input_gpu, l.c*l.h*l.w*l.batch, l.binary_input_gpu, net.index_n);
+        #else
+            binarize_gpu(net.input_gpu, l.c*l.h*l.w*l.batch, l.binary_input_gpu);
+        #endif
         net.input_gpu = l.binary_input_gpu;
     }
 
@@ -188,9 +220,15 @@ void forward_convolutional_layer_gpu_thread(netlayer* input)
             if (l.size == 1){
                 b = im;
             } else {
+            #ifdef STREAM
+                im2col_gpu_stream(im, l.c/l.groups, l.h, l.w, l.size, l.stride, l.pad, b, net.index_n);
+            #else
                 im2col_gpu(im, l.c/l.groups, l.h, l.w, l.size, l.stride, l.pad, b);
+            #endif
             }
             gemm_gpu_dd(0,0,m,n,k,1,a,k,b,n,1,c,n, input->net.index_n);
+            //cuda_synchronize(net.index_n, __LINE__);
+
         }
     }
 #endif
@@ -198,15 +236,21 @@ void forward_convolutional_layer_gpu_thread(netlayer* input)
     if (l.batch_normalize) {
         forward_batchnorm_layer_gpu(l, net);
     } else {
-        add_bias_gpu(l.output_gpu, l.biases_gpu, l.batch, l.n, l.out_w*l.out_h);
+        #ifdef STREAM
+            add_bias_gpu_stream(l.output_gpu, l.biases_gpu, l.batch, l.n, l.out_w*l.out_h, net.index_n);
+        #else
+            add_bias_gpu(l.output_gpu, l.biases_gpu, l.batch, l.n, l.out_w*l.out_h);
+        #endif
     }
 
-    activate_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation);
+    #ifdef STREAM
+        //stream apply activate
+        activate_array_gpu_stream(l.output_gpu, l.outputs*l.batch, l.activation, net.index_n);
+    #else
+        activate_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation);
+    #endif
     //if(l.dot > 0) dot_error_gpu(l);
     if(l.binary || l.xnor) swap_binary(&l);
-
-     
-     
 }
 #endif
 
@@ -402,5 +446,7 @@ void update_convolutional_layer_gpu(layer l, update_args a)
         constrain_gpu(l.nweights, l.clip, l.weights_gpu, 1);
     }
 }
+
+
 
 

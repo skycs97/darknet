@@ -109,9 +109,15 @@ void forward_shortcut_layer_gpu_thread(netlayer *input)
     network net = input->net;
     layer l = input->layer;
 
-    copy_gpu(l.outputs * l.batch, net.input_gpu, 1, l.output_gpu, 1);
+   #ifdef STREAM
+    copy_gpu_stream(l.outputs*l.batch, net.input_gpu, 1, l.output_gpu, 1, net.index_n);
+    shortcut_gpu_stream(l.batch, l.w, l.h, l.c, net.layers[l.index].output_gpu, l.out_w, l.out_h, l.out_c, l.alpha, l.beta, l.output_gpu, net.index_n);
+    activate_array_gpu_stream(l.output_gpu, l.outputs*l.batch, l.activation, net.index_n);
+#else
+    copy_gpu(l.outputs*l.batch, net.input_gpu, 1, l.output_gpu, 1);
     shortcut_gpu(l.batch, l.w, l.h, l.c, net.layers[l.index].output_gpu, l.out_w, l.out_h, l.out_c, l.alpha, l.beta, l.output_gpu);
-    activate_array_gpu(l.output_gpu, l.outputs * l.batch, l.activation);
+    activate_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation);
+#endif
 }
 #endif
 

@@ -84,29 +84,37 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
     {
       case 0:
         cpu_time = arg_p->layer.exe_time;
+        //////cuda_synchronize(arg_p->net.index_n, __LINE__);
+
         //lcsi 0815
-        fd = open("/sys/devices/gpu.0/load", O_RDONLY);
-        read(fd, buffer, 4);
-        arg_p->layer.exe_time_gpu = arg_p->layer.exe_time_gpu; get_gpu_util_time(arg_p->layer.gpu_util_weight, atoi(buffer));
-        close(fd);
+        //fd = open("/sys/devices/gpu.0/load", O_RDONLY);
+        //read(fd, buffer, 4);
+        //arg_p->layer.exe_time_gpu = arg_p->layer.exe_time_gpu; get_gpu_util_time(arg_p->layer.gpu_util_weight, atoi(buffer));
+        //close(fd);
 
         if (gpu_total_time+ arg_p->layer.exe_time_gpu <= cpu->jobqueue.total_time+cpu_time)
         {
+            // if(flag == 0){
+            //     cuda_push_array_stream(arg_p->net.input_gpu, arg_p->net.input, arg_p->net.inputs, arg_p->net.index_n);
+            // }
             arg_p->flag = 1;
             thpool_add_work(gpu, function, (void *)arg_p, gpu_time);
-	    gpu_total_time += arg_p->layer.exe_time_gpu;
+	        gpu_total_time += arg_p->layer.exe_time_gpu;
         }
        else
-	{
-              
-
-//		     cudaMemcpyAsync(arg_p->net.input, arg_p->net.input_gpu, arg_p->net.inputs*sizeof(float), cudaMemcpyDeviceToHost, 0);
-            if(flag == 1)	       
-             	     cudaDeviceSynchronize();
+	    {
+            //if(flag == 1){
+                //cuda_pull_array_stream(arg_p->net.input_gpu, arg_p->net.input, arg_p->net.inputs, arg_p->net.index_n);
+                //cudaDeviceSynchronize();
+                //cuda_synchronize(arg_p->net.index_n, __LINE__);
+                
+            //}
+		        //cudaMemcpyAsync(arg_p->net.input, arg_p->net.input_gpu, arg_p->net.inputs*sizeof(float), cudaMemcpyDeviceToHost, usedstream(arg_p->net.index_n));
+                
 	       	arg_p->flag = 0;
 
             thpool_add_work(cpu, function, (void *)arg_p, arg_p->layer.exe_time);
-	}        
+	    }        
         break;
     case 1:
         arg_p->flag = 1;

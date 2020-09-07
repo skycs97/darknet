@@ -50,7 +50,13 @@ void forward_dropout_layer_gpu_thread(netlayer* input)
     cuda_push_array(layer.rand_gpu, layer.rand, size);
     */
 
-    yoloswag420blazeit360noscope<<<cuda_gridsize(size), BLOCK>>>(net.input_gpu, size, layer.rand_gpu, layer.probability, layer.scale);
+    #ifdef STREAM
+        //stream apply dropout
+    	fprintf(stderr, "[%d] index, drop id parameter : [%d] \n", net.index_n, net.index_n);
+        yoloswag420blazeit360noscope<<<cuda_gridsize(size), BLOCK, 0, usedstream(net.index_n)>>>(net.input_gpu, size, layer.rand_gpu, layer.probability, layer.scale);
+    #else
+        yoloswag420blazeit360noscope<<<cuda_gridsize(size), BLOCK>>>(net.input_gpu, size, layer.rand_gpu, layer.probability, layer.scale);
+    #endif
     check_error(cudaPeekAtLastError());
 
      

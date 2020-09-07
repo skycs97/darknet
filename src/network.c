@@ -203,13 +203,17 @@ void forward_function(netlayer *input)
 
     if (input->flag == 1)
     {
+        //cuda_push_array_stream(input->net.input_gpu, input->net.input, input->net.inputs * input->net.batch, input->net.index_n);
+
         if (input->layer.delta_gpu)
         {
             fill_gpu(input->layer.outputs * input->layer.batch, 0, input->layer.delta_gpu, 1);
         }
 
         input->layer.forward_gpu_thread(input);
-	gpu_total_time-= input->layer.exe_time_gpu;
+	    gpu_total_time-= input->layer.exe_time_gpu;
+        //cuda_pull_array_stream(input->layer.output_gpu, input->layer.output, input->layer.outputs * input->layer.batch, input->net.index_n);
+
     }
     else if (input->flag == 0)
     {
@@ -239,13 +243,16 @@ void forward_network(network *netp)
     int i;
     int lastFlag = 0;
     cuda_set_device(net.gpu_index);
-
     int b = 0;
     int type_i[100];
     LAYER_TYPE type[100];
 
     int routeOrShort[net.n];
+#ifdef STREAM
+    cuda_push_array_stream(net.input_gpu, net.input, net.inputs * net.batch, net.index_n);
+#else
     cuda_push_array(net.input_gpu, net.input, net.inputs * net.batch);
+#endif
 	int c=0,g=0;
     for (i = 0; i < net.n; ++i)
     {
@@ -266,6 +273,7 @@ void forward_network(network *netp)
         {
             pthread_cond_wait(&cond_t[net.index_n], &mutex_t[net.index_n]);
         }
+
 	//if(lastFlag == 0)
 	       // printf("%d-%d %s - %d\n", net.index_n, i, get_layer_string(l.type), lastFlag);
 	if(lastFlag == 0){
@@ -280,10 +288,13 @@ void forward_network(network *netp)
 
  //       pthread_mutex_unlock(&mutex_t[net.index_n]);
     }
-  printf("%d cpu: %d gpu: %d\n", net.index_n, c, g);
-    if (lastFlag == 1)
-	cudaDeviceSynchronize();
-//       pull_network_output(netp);
+    printf("%d cpu: %d gpu: %d\n", net.index_n, c, g);
+    if (lastFlag == 1){
+        //cuda_synchronize(net.index_n, __LINE__);
+
+        //cudaDeviceSynchronize();
+       //pull_network_output(netp);
+    }
 
 #endif
 #endif
@@ -1351,7 +1362,11 @@ float train_networks(network **nets, int n, data d, int interval)
 void pull_network_output(network *net)
 {
     layer l = get_network_output_layer(net);
-    cuda_pull_array(l.output_gpu, l.output, l.outputs * l.batch);
+    #ifdef STREAM
+        cuda_pull_array_stream(l.output_gpu, l.output, l.outputs*l.batch, net->index_n);
+    #else
+        cuda_pull_array(l.output_gpu, l.output, l.outputs * l.batch);
+    #endif
 }
 
 #endif
