@@ -831,6 +831,7 @@ network *parse_network_cfg(char *filename)
             l.output = net->layers[count-1].output;
             l.delta = net->layers[count-1].delta;
 #ifdef GPU
+
             l.output_gpu = net->layers[count-1].output_gpu;
             l.delta_gpu = net->layers[count-1].delta_gpu;
 #endif

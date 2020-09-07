@@ -103,12 +103,12 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
         }
        else
 	    {
-            //if(flag == 1){
+            if(flag == 1){
                 //cuda_pull_array_stream(arg_p->net.input_gpu, arg_p->net.input, arg_p->net.inputs, arg_p->net.index_n);
                 //cudaDeviceSynchronize();
-                //cuda_synchronize(arg_p->net.index_n, __LINE__);
+                cuda_synchronize(arg_p->net.index_n, __LINE__);
                 
-            //}
+            }
 		        //cudaMemcpyAsync(arg_p->net.input, arg_p->net.input_gpu, arg_p->net.inputs*sizeof(float), cudaMemcpyDeviceToHost, usedstream(arg_p->net.index_n));
                 
 	       	arg_p->flag = 0;

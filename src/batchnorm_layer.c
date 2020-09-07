@@ -228,9 +228,15 @@ void forward_batchnorm_layer_gpu(layer l, network net)
         add_bias_gpu(l.output_gpu, l.biases_gpu, l.batch, l.out_c, l.out_w*l.out_h);
 #endif
     } else {
+        #ifdef STREAM
+        normalize_gpu_stream(l.output_gpu, l.rolling_mean_gpu, l.rolling_variance_gpu, l.batch, l.out_c, l.out_h*l.out_w, net.index_n);
+        scale_bias_gpu_stream(l.output_gpu, l.scales_gpu, l.batch, l.out_c, l.out_h*l.out_w, net.index_n);
+        add_bias_gpu_stream(l.output_gpu, l.biases_gpu, l.batch, l.out_c, l.out_w*l.out_h, net.index_n);
+        #else
         normalize_gpu(l.output_gpu, l.rolling_mean_gpu, l.rolling_variance_gpu, l.batch, l.out_c, l.out_h*l.out_w);
         scale_bias_gpu(l.output_gpu, l.scales_gpu, l.batch, l.out_c, l.out_h*l.out_w);
         add_bias_gpu(l.output_gpu, l.biases_gpu, l.batch, l.out_c, l.out_w*l.out_h);
+        #endif
     }
 
 }

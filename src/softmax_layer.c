@@ -30,7 +30,7 @@ softmax_layer make_softmax_layer(int batch, int inputs, int groups)
     l.forward_thread = forward_softmax_layer_thread;
 #endif
     //lcs0815
-    l.exe_time = 0.003;
+    l.exe_time = 0.00003;
 
 #ifdef GPU
     l.forward_gpu = forward_softmax_layer_gpu;
@@ -180,7 +180,7 @@ void forward_softmax_layer_gpu_thread(netlayer *input)
                 mask_gpu_stream(l.batch*l.inputs, l.loss_gpu, SECRET_NUM, net.truth_gpu, 0, net.index_n);
             }
             cuda_pull_array_stream(l.loss_gpu, l.loss, l.batch*l.inputs, net.index_n);
-            //cuda_synchronize(net.index_n, __LINE__);
+            cuda_synchronize(net.index_n, __LINE__);
             l.cost[0] = sum_array(l.loss, l.batch*l.inputs);
         }
 

@@ -1120,4 +1120,20 @@ extern "C" void upsample_gpu(float *in, int w, int h, int c, int batch, int stri
 
         check_error(cudaPeekAtLastError());
     }
+    void scale_bias_gpu_stream(float *output, float *biases, int batch, int n, int size, int id)
+    {
+        dim3 dimGrid((size-1)/BLOCK + 1, n, batch);
+        dim3 dimBlock(BLOCK, 1, 1);
+
+        scale_bias_kernel<<<dimGrid, dimBlock, 0, usedstream(id)>>>(output, biases, n, size);
+        //cuda_synchronize(id, __LINE__);
+        check_error(cudaPeekAtLastError());
+    }
+    extern "C" void normalize_gpu_stream(float *x, float *mean, float *variance, int batch, int filters, int spatial, int id)
+    {
+        size_t N = batch*filters*spatial;
+        normalize_kernel<<<cuda_gridsize(N), BLOCK, 0, usedstream(id)>>>(N, x, mean, variance, batch, filters, spatial);
+       //cuda_synchronize(id, __LINE__);
+        check_error(cudaPeekAtLastError());
+    }
 #endif

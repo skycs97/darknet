@@ -109,6 +109,9 @@ void upsample_gpu(float *in, int w, int h, int c, int batch, int stride, int for
     void softmax_gpu_stream(float *input, int n, int batch, int batch_offset, int groups, int group_offset, int stride, float temp, float *output, int id);
     void softmax_x_ent_gpu_stream(int n, float *pred, float *truth, float *delta, float *error, int id);
     void mask_gpu_stream(int N, float * X, float mask_num, float * mask, float val, int id);
+    void normalize_gpu_stream(float *x, float *mean, float *variance, int batch, int filters, int spatial, int id);
+    void scale_bias_gpu_stream(float *output, float *biases, int batch, int n, int size, int id);
+
 #endif
 #endif
 #endif

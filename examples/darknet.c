@@ -458,11 +458,11 @@ int *cond_i;
 
 //#define n_net 8 //hojin 8->2
 
-//hojin each network num
-#define n_des 3
-#define n_res 3
-#define n_alex 3
-#define n_vgg 3
+//hojin each networknum
+#define n_des 0
+#define n_res 0
+#define n_alex 0
+#define n_vgg 20
 double gpu_total_time = 0;
 #define cpu_thread 7
 #define gpu_thread 1

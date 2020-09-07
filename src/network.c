@@ -265,7 +265,6 @@ void forward_network(network *netp)
         nl.layer = l;
         nl.net = net;
         nl.flag = 0;
-
         lastFlag = add_job(twin_thp, forward_function, &nl, lastFlag, routeOrShort);
        // routeOrShort[i] = lastFlag;
 
@@ -290,7 +289,7 @@ void forward_network(network *netp)
     }
     printf("%d cpu: %d gpu: %d\n", net.index_n, c, g);
     if (lastFlag == 1){
-        //cuda_synchronize(net.index_n, __LINE__);
+        cuda_synchronize(net.index_n, __LINE__);
 
         //cudaDeviceSynchronize();
        //pull_network_output(netp);

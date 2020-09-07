@@ -388,7 +388,7 @@ void forward_connected_layer_gpu_thread(netlayer *input)
     float *b = l.weights_gpu;
     float *c = l.output_gpu;
     gemm_gpu_dd(0, 1, m, n, k, 1, a, k, b, k, 1, c, n,input->net.index_n);
-    //cuda_synchronize(net.index_n, __LINE__);
+    cuda_synchronize(net.index_n, __LINE__);
 
     if (l.batch_normalize)
     {
