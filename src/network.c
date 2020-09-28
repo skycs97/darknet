@@ -207,7 +207,11 @@ void forward_function(netlayer *input)
 
         if (input->layer.delta_gpu)
         {
+#ifdef STREAM
+	    fill_gpu_stream(input->layer.outputs * input->layer.batch, 0, input->layer.delta_gpu,1,input->net.index_n);
+#else
             fill_gpu(input->layer.outputs * input->layer.batch, 0, input->layer.delta_gpu, 1);
+#endif
         }
 
         input->layer.forward_gpu_thread(input);
@@ -258,6 +262,7 @@ void forward_network(network *netp)
     {
    //     pthread_mutex_lock(&mutex_t[net.index_n]);
        cond_i[net.index_n] = 1;
+       //fprintf(timing, "%d,%d,%lf\n", net.index_n, i, what_time_is_it_now());
         net.index = i;
         layer l = net.layers[i];
         netlayer nl;
@@ -275,19 +280,19 @@ void forward_network(network *netp)
 
 	//if(lastFlag == 0)
 	       // printf("%d-%d %s - %d\n", net.index_n, i, get_layer_string(l.type), lastFlag);
-	if(lastFlag == 0){
-		c++;
-	}
-	else{
-		g++;
-	}
+//	if(lastFlag == 0){
+//		c++;
+//	}
+//	else{
+//		g++;
+//	}
         net.input = l.output;
         net.input_gpu = l.output_gpu;
         net.inputs = l.outputs;
 
  //       pthread_mutex_unlock(&mutex_t[net.index_n]);
     }
-    printf("%d cpu: %d gpu: %d\n", net.index_n, c, g);
+  //  printf("%d cpu: %d gpu: %d\n", net.index_n, c, g);
     if (lastFlag == 1){
         cuda_synchronize(net.index_n, __LINE__);
 

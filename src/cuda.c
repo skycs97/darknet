@@ -9,12 +9,18 @@ int gpu_index = 0;
 #include <assert.h>
 #include <stdlib.h>
 #include <time.h>
+#include "cuda_profiler_api.h"
+
+static int check = 0;
 
 void cuda_set_device(int n)
 {
+   //if(check == 0){
     gpu_index = n;
     cudaError_t status = cudaSetDevice(n);
     check_error(status);
+    check = 1;
+  // }
 }
 
 int cuda_get_device()

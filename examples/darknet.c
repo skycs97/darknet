@@ -459,10 +459,10 @@ int *cond_i;
 //#define n_net 8 //hojin 8->2
 
 //hojin each networknum
-#define n_des 0
-#define n_res 0
-#define n_alex 0
-#define n_vgg 20
+#define n_des 8
+#define n_res 8
+#define n_alex 2
+#define n_vgg 2
 double gpu_total_time = 0;
 #define cpu_thread 7
 #define gpu_thread 1
@@ -528,7 +528,7 @@ static int pwr_ind_finish =0;
 // 	}
 // 	fclose(fp);	
 // }
-
+FILE * timing;
 
 int main()
 {
@@ -541,6 +541,7 @@ int main()
         cuda_set_device(gpu_index);
     }
     cudaSetDeviceFlags(cudaDeviceMapHost);
+    timing = fopen("thread_cpu.txt","a+");
 #endif
 
 #ifdef THREAD
@@ -664,7 +665,7 @@ int main()
 
 //kmsjames 2020 0819 for power mon
     pwr_ind = 1;
-
+cudaProfilerStart();
 
     for (i = 0; i < n_des; i++)
     {
@@ -764,7 +765,7 @@ int main()
 #endif
    FILE *fp =fopen("exetime.txt", "a+");
     fprintf(stderr, "\n execution Time : %lf\n", what_time_is_it_now() - time);
-
+	cudaProfilerStop();
     if (fp)
     {
         fprintf(fp, "%lf\n", what_time_is_it_now() - time);

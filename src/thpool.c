@@ -300,6 +300,7 @@ static int thread_init(thpool_ *thpool_p, struct thread **thread_p, int id)
 		err("thread_init(): Could not allocate memory for thread\n");
 		return -1;
 	}
+//	cuda_set_device(gpu_index);
 
 	(*thread_p)->thpool_p = thpool_p;
 	(*thread_p)->id = id;
@@ -389,6 +390,7 @@ static void *thread_do(struct thread *thread_p)
 				arg_buff = job_p->arg;
 				thread_p->start_time = what_time_is_it_now();
 				thread_p->exe_time = job_p->exe_time;
+//				fprintf(timing, "%d,%lf\n", ((netlayer*)arg_buff)->net.index_n, what_time_is_it_now());
 				func_buff(arg_buff);
 				free(job_p);
 			}
