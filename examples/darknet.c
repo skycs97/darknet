@@ -468,9 +468,6 @@ int cpu_thread;
 int gpu_thread;
 int g=0, c=0;
 
-#define cpu_thread 7
-#define gpu_thread 1
-
 int main(int argc, char* argv[])
 {
     if(argc != 7){
