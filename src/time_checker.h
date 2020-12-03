@@ -1,8 +1,8 @@
 #ifndef TIME_CHECKER_H
 #define TIME_CHECKER_H
 
-extern double convTime(int c, int size, int out_w, int out_h, int out_c);
-extern double convTime_gpu(int c, int size, int out_w, int out_h, int out_c);
+extern double convTime(int c, int size, int out_w, int out_h, int out_c, int w, int h, int pad, int stride, int batch_normal);
+extern double convTime_gpu(int c, int size, int out_w, int out_h, int out_c, int w, int h, int pad, int stride, int batch_normal);
 extern double avgTime(int w, int h, int c);
 extern double avgTime_gpu(int w, int h, int c);
 extern double connectTime(int inputs, int outputs);

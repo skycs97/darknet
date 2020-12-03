@@ -72,7 +72,7 @@ twin_thpool *twin_thpool_init(int thread_num_cpu, int thread_num_gpu)
     return twin_thpool_p;
 }
 
-int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_p, int flag, int *routeOrShort)
+int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_p, int flag)
 {
     threadpool cpu = twin_thpool_p->thpool_cpu;
     threadpool gpu = twin_thpool_p->thpool_gpu;
@@ -83,14 +83,13 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
     switch (type)
     {
       case 0:
-        cpu_time = arg_p->layer.exe_time;
+        cpu_time = arg_p->layer.exe_time + get_thread_min_time(cpu);
         //////cuda_synchronize(arg_p->net.index_n, __LINE__);
 
         //lcsi 0815
-        fd = open("/sys/devices/gpu.0/load", O_RDONLY);
-       read(fd, buffer, 4);
-        arg_p->layer.exe_time_gpu = arg_p->layer.exe_time_gpu; get_gpu_util_time(arg_p->layer.gpu_util_weight, atoi(buffer));
-        close(fd);
+    //     fd = open("/sys/devices/gpu.0/load", O_RDONLY);
+    //    read(fd, buffer, 4);
+        arg_p->layer.exe_time_gpu = arg_p->layer.exe_time_gpu;
 
         if (gpu_total_time+ arg_p->layer.exe_time_gpu <= cpu->jobqueue.total_time+cpu_time)
         {
@@ -133,9 +132,14 @@ double get_thread_min_time(threadpool thpool)
 
     double time = __DBL_MAX__;
 
+    if(thpool->thread_length != thpool->num_threads_working){
+        return 0;
+    }
+
     for (i = 0; i < thpool->thread_length; i++)
     {
         thread *thread_p = thpool->threads[i];
+
 
         double t = (thread_p->exe_time - (what_time_is_it_now() - thread_p->start_time));
 

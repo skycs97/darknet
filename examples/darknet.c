@@ -459,79 +459,25 @@ int *cond_i;
 //#define n_net 8 //hojin 8->2
 
 //hojin each networknum
-#define n_des 8
-#define n_res 8
-#define n_alex 2
-#define n_vgg 2
+int n_des;
+int n_res;
+int n_alex;
+int n_vgg;
 double gpu_total_time = 0;
+int cpu_thread;
+int gpu_thread;
+int g=0, c=0;
+
 #define cpu_thread 7
 #define gpu_thread 1
-//kmsjames 2020 0819 for pwr mon
-static int pwr_ind=0;
-static int pwr_ind_finish =0;
-// void *pwr_mon_do(void)
-// {
-// 	char buffer[10];
-// 	int fd[6];
-// 	int val[6];
-// 	int total_pwr=0;
 
-//         FILE *fp = fopen("total_pwr_cpu_gpu.txt","a");
-
-// 	while(1){
-// 		if(pwr_ind == 0) continue;
-	
-// 		total_pwr = 0;	
-// 		fd[0] = open("/sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power0_input", O_RDONLY);
-// 		read(fd[0], buffer, 5);
-// 	 	val[0] = atoi(buffer);
-		
-// 		fd[1] = open("/sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power1_input", O_RDONLY);
-// 		read(fd[1], buffer, 5);
-// 	 	val[1] = atoi(buffer);
-		
-// 		fd[2] = open("/sys/bus/i2c/drivers/ina3221x/1-0040/iio_device/in_power2_input", O_RDONLY);
-// 		read(fd[2], buffer, 5);
-// 	 	val[2] = atoi(buffer);
-		
-// 		fd[3] = open("/sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power0_input", O_RDONLY);
-// 		read(fd[3], buffer, 5);
-// 	 	val[3] = atoi(buffer);
-		
-// 		fd[4] = open("/sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power1_input", O_RDONLY);
-// 		read(fd[4], buffer, 5);
-// 	 	val[4] = atoi(buffer);
-		
-// 		fd[5] = open("/sys/bus/i2c/drivers/ina3221x/1-0041/iio_device/in_power2_input", O_RDONLY);
-// 		read(fd[5], buffer, 5);
-// 	 	val[5] = atoi(buffer);
-		
-// 		for(int nu=0; nu<6;nu++){
-// 			total_pwr += val[nu];	
-// 			close(fd[nu]);
-// 		}	
-
-// 		if (fp)
-//     		{
-// 		        for(int nu =0; nu<6; nu++) fprintf(fp, " %d,",val[nu]);
-// 			fprintf(fp, "\n");
-// 			fprintf(fp, "total_pwr = %d\n", total_pwr);
-//     		}
-//     		else
-//     		{
-//         		fprintf(stderr, "file open error");
-//         		exit(1);
-//     		}
-// 		if(pwr_ind_finish == 1) break;
-
-// 		usleep(10);
-// 	}
-// 	fclose(fp);	
-// }
-FILE * timing;
-
-int main()
+int main(int argc, char* argv[])
 {
+    if(argc != 7){
+        fprintf(stderr, "execute example\n");
+        fprintf(stderr, "./darknet <cpu_thread> <gpu_thread> <n_des> <n_res> <n_vgg> <n_alex>\n");
+        return -1;
+    }
 #ifndef GPU
     gpu_index = -1;
 #else
@@ -541,9 +487,9 @@ int main()
         cuda_set_device(gpu_index);
     }
     cudaSetDeviceFlags(cudaDeviceMapHost);
-    timing = fopen("thread_cpu.txt","a+");
 #endif
-
+    cpu_thread = atoi(argv[1]);
+    gpu_thread = atoi(argv[2]);
 #ifdef THREAD
     twin_thp = twin_thpool_init(cpu_thread,gpu_thread);
 #endif
@@ -555,6 +501,11 @@ int main()
     char *vggName = "VGG";
     char *denseName = "Dense";
     char *resName = "Res";
+
+    n_des = atoi(argv[3]);
+    n_res = atoi(argv[4]);
+    n_vgg = atoi(argv[5]);
+    n_alex = atoi(argv[6]);
 
     network *denseNetwork[n_des];
     network *resNetwork[n_res];
@@ -675,7 +626,7 @@ cudaProfilerStart();
         net_input_des[i]->names = names;
         net_input_des[i]->netName = denseName;
 
-        printf(" It's turn for des i = %d\n", i);
+        fprintf(stderr, " It's turn for des i = %d\n", i);
         if (pthread_create(&networkArray_des[i], NULL, (void *)predict_classifier2, net_input_des[i]) < 0)
         {
             perror("thread error");
@@ -691,7 +642,7 @@ cudaProfilerStart();
         net_input_res[i]->names = names;
         net_input_res[i]->netName = resName;
 
-        printf(" It's turn for res i = %d\n", i);
+        fprintf(stderr," It's turn for res i = %d\n", i);
         if (pthread_create(&networkArray_res[i], NULL, (void *)predict_classifier2, net_input_res[i]) < 0)
         {
             perror("thread error");
@@ -707,7 +658,7 @@ cudaProfilerStart();
             net_input_vgg[i]->names = names;
             net_input_vgg[i]->netName = vggName;
 
-        printf(" It's turn for vgg i = %d\n", i);
+        fprintf(stderr, " It's turn for vgg i = %d\n", i);
         if (pthread_create(&networkArray_vgg[i], NULL, (void *)predict_classifier2, net_input_vgg[i]) < 0)
         {
             perror("thread error");
@@ -723,7 +674,7 @@ cudaProfilerStart();
             net_input_alex[i]->names = names;
             net_input_alex[i]->netName = alexName;
 
-        printf(" It's turn for alex i = %d\n", i);
+        fprintf(stderr, " It's turn for alex i = %d\n", i);
         if (pthread_create(&networkArray_alex[i], NULL, (void *)predict_classifier2, net_input_alex[i]) < 0)
         {
             perror("thread error");
@@ -763,20 +714,9 @@ cudaProfilerStart();
     for(i=0; i<THREAD_NUM_POOL;i++)
 	    pthread_join(thpool->threads[i]->pthread, NULL);
 #endif
-   FILE *fp =fopen("exetime.txt", "a+");
-    fprintf(stderr, "\n execution Time : %lf\n", what_time_is_it_now() - time);
 	cudaProfilerStop();
-    if (fp)
-    {
-        fprintf(fp, "%lf\n", what_time_is_it_now() - time);
-    }
-    else
-    {
-        fprintf(stderr, "file open error");
-        exit(1);
-    }
-    fclose(fp);
-
+    fprintf(stderr, "\n execution Time : %lf\n", what_time_is_it_now() - time);
+    printf("all count cpu: %d, gpu: %d\n", c, g);
 //kmsjames 2020 0819 for power mon
     pwr_ind_finish = 1;    
 

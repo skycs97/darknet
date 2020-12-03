@@ -713,23 +713,12 @@ void *predict_classifier2(test *input)
     fprintf(stderr, "network : %s - %d : Predicted in %lf seconds.\n", input->netName, net->index_n, time2 - time);
     char fileName[20];
 
-    sprintf(fileName, "%s-%d.txt", input->netName, net->index_n);
     
-    FILE* fp = fopen(fileName, "a+");
-
-    if (fp){
-            fprintf(fp, "%lf\n", time2 - time);
-        }
-        else{
-            fprintf(stderr, "file open error\n");
-            exit(1);
-        }
-    fclose(fp);
     for (i = 0; i < top; ++i)
     {
         int index = indexes[i];
 
-        printf("%5.2f%%: %s\n", predictions[index] * 100, names[index]);
+        fprintf(stderr, "%5.2f%%: %s\n", predictions[index] * 100, names[index]);
     }
     if (r.data != im.data)
         free_image(r);

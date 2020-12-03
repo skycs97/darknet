@@ -33,8 +33,9 @@ extern "C"
     extern pthread_mutex_t *mutex_t;
     extern int *cond_i;
 #endif
-extern FILE* timing;
 extern double gpu_total_time;
+extern int g;
+extern int c;
     /*��Ÿ������*/
     typedef struct
     {

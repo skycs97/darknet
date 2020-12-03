@@ -30,7 +30,7 @@ softmax_layer make_softmax_layer(int batch, int inputs, int groups)
     l.forward_thread = forward_softmax_layer_thread;
 #endif
     //lcs0815
-    l.exe_time = 0.00003;
+    l.exe_time = 0.0003;
 
 #ifdef GPU
     l.forward_gpu = forward_softmax_layer_gpu;

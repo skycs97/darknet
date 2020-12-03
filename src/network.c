@@ -250,8 +250,7 @@ void forward_network(network *netp)
     int b = 0;
     int type_i[100];
     LAYER_TYPE type[100];
-
-    int routeOrShort[net.n];
+    int g_n = 0, c_n = 0;
 #ifdef STREAM
     cuda_push_array_stream(net.input_gpu, net.input, net.inputs * net.batch, net.index_n);
 #else
@@ -270,8 +269,7 @@ void forward_network(network *netp)
         nl.layer = l;
         nl.net = net;
         nl.flag = 0;
-        lastFlag = add_job(twin_thp, forward_function, &nl, lastFlag, routeOrShort);
-       // routeOrShort[i] = lastFlag;
+        lastFlag = add_job(twin_thp, forward_function, &nl, lastFlag);
 
         while (cond_i[net.index_n] == 1)
         {
@@ -280,22 +278,23 @@ void forward_network(network *netp)
 
 	//if(lastFlag == 0)
 	       // printf("%d-%d %s - %d\n", net.index_n, i, get_layer_string(l.type), lastFlag);
-//	if(lastFlag == 0){
-//		c++;
-//	}
-//	else{
-//		g++;
-//	}
+	if(lastFlag == 0){
+		c_n++;
+	}
+	else{
+		g_n++;
+	}
         net.input = l.output;
         net.input_gpu = l.output_gpu;
         net.inputs = l.outputs;
 
  //       pthread_mutex_unlock(&mutex_t[net.index_n]);
     }
-  //  printf("%d cpu: %d gpu: %d\n", net.index_n, c, g);
+    printf("%d cpu: %d gpu: %d\n", net.index_n, c, g);
     if (lastFlag == 1){
         cuda_synchronize(net.index_n, __LINE__);
-
+        c += c_n;
+        g += g_n;
         //cudaDeviceSynchronize();
        //pull_network_output(netp);
     }
