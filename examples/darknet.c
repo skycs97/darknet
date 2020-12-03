@@ -612,7 +612,6 @@ int main(int argc, char* argv[])
     //
 
 //kmsjames 2020 0819 for power mon
-    pwr_ind = 1;
 cudaProfilerStart();
 
     for (i = 0; i < n_des; i++)
@@ -715,7 +714,6 @@ cudaProfilerStart();
     fprintf(stderr, "\n execution Time : %lf\n", what_time_is_it_now() - time);
     printf("all count cpu: %d, gpu: %d\n", c, g);
 //kmsjames 2020 0819 for power mon
-    pwr_ind_finish = 1;    
 
 //    fclose(fp);
     free(cond_t);
