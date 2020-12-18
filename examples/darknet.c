@@ -464,6 +464,7 @@ int n_res;
 int n_alex;
 int n_vgg;
 double gpu_total_time = 0;
+double cpu_total_time = 0;
 int cpu_thread;
 int gpu_thread;
 int g=0, c=0;
@@ -484,6 +485,7 @@ int main(int argc, char* argv[])
         cuda_set_device(gpu_index);
     }
     cudaSetDeviceFlags(cudaDeviceMapHost);
+    cudaSetDeviceFlags(cudaDeviceScheduleYield);
 #endif
     cpu_thread = atoi(argv[1]);
     gpu_thread = atoi(argv[2]);

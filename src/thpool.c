@@ -340,7 +340,7 @@ static void *thread_do(struct thread *thread_p)
 	/* Set thread name for profiling and debuging */
 	char thread_name[128] = {0};
 	sprintf(thread_name, "thread-pool-%d", thread_p->id);
-
+	cuda_set_device(0);
 #if defined(__linux__)
 	/* Use prctl instead to prevent using _GNU_SOURCE flag and implicit declaration */
 	prctl(PR_SET_NAME, thread_name);

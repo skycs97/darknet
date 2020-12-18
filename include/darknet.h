@@ -34,6 +34,7 @@ extern "C"
     extern int *cond_i;
 #endif
 extern double gpu_total_time;
+extern double cpu_total_time;
 extern int g;
 extern int c;
     /*��Ÿ������*/
@@ -172,6 +173,7 @@ extern int c;
 
     struct layer
     {
+	int flag;
         LAYER_TYPE type;
         ACTIVATION activation;
         COST_TYPE cost_type;
