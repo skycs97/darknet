@@ -834,6 +834,7 @@ network *parse_network_cfg(char *filename)
 
             l.output_gpu = net->layers[count-1].output_gpu;
             l.delta_gpu = net->layers[count-1].delta_gpu;
+            cudaEventCreate(&l.kernelEndEvent);
 #endif
         }else{
             fprintf(stderr, "Type not recognized: %s\n", s->type);

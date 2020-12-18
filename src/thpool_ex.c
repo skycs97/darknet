@@ -82,43 +82,31 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
     char buffer[10];
     switch (type)
     {
-      case 0:
+    case 0:
         cpu_time = arg_p->layer.exe_time+ get_thread_min_time(cpu);
 
         //lcsi 0815
     //     fd = open("/sys/devices/gpu.0/load", O_RDONLY);
     //    read(fd, buffer, 4);
     //
-        arg_p->layer.exe_time_gpu = arg_p->layer.exe_time_gpu;
+        gpu_time = arg_p->layer.exe_time_gpu;
 
 //      if (gpu_total_time+ arg_p->layer.exe_time_gpu <= cpu->jobqueue.total_time+cpu_time)
-//	if (gpu_total_time+ arg_p->layer.exe_time_gpu <= cpu->jobqueue.total_time+ cpu_time)
+	    if (gpu_total_time+ gpu_time <= cpu_total_time+ cpu_time)
 //	if (arg_p->net.index_n >= 16)
-	if(arg_p->layer.type == CONVOLUTIONAL) 
+	    //if(arg_p->layer.type == CONVOLUTIONAL) 
         {
-            // if(flag == 0){
-            //     cuda_push_array_stream(arg_p->net.input_gpu, arg_p->net.input, arg_p->net.inputs, arg_p->net.index_n);
-            // }
             arg_p->flag = 1;
             thpool_add_work(gpu, function, (void *)arg_p, gpu_time);
 	        gpu_total_time += arg_p->layer.exe_time_gpu;
         }
-       else{
-         if(flag == 1){
-                //cuda_pull_array_stream(arg_p->net.input_gpu, arg_p->net.input, arg_p->net.inputs, arg_p->net.index_n);
-//cudaDeviceSynchronize();
-		cuda_synchronize(arg_p->net.index_n, __LINE__);
-      /*	        if (gpu_total_time+ arg_p->layer.exe_time_gpu <= cpu->jobqueue.total_time+ cpu_time) {
-		            thpool_add_work(cpu, function, (void *)arg_p, arg_p->layer.exe_time);	
-			return;
-		}*/
-
-            	        //cudaMemcpyAsync(arg_p->net.input, arg_p->net.input_gpu, arg_p->net.inputs*sizeof(float), cudaMemcpyDeviceToHost, usedstream(arg_p->net.index_n));
-	  }
+        else{
+            if(flag == 1){
+                cuda_synchronize(arg_p->net.index_n, __LINE__);
+            }
 	       	arg_p->flag = 0;
-
             thpool_add_work(cpu, function, (void *)arg_p, arg_p->layer.exe_time);
-	    cpu_total_time += cpu_time;
+	        cpu_total_time += cpu_time;
 	    }        
         break;
     case 1:
@@ -154,5 +142,5 @@ double get_thread_min_time(threadpool thpool)
             time = t;
     }
 
-    return time;
+    return (time<0) ? 0 : time;
 }

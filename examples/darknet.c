@@ -451,6 +451,7 @@ void choiceNetwork()
 }
 
 twin_thpool *twin_thp;
+threadpool time_check_thp;
 //각 네트워크의 조건변수, mutex변수, wait를 위한 변수 선언 헤더에 extern변수로 지정
 pthread_cond_t *cond_t;
 pthread_mutex_t *mutex_t;
@@ -491,6 +492,7 @@ int main(int argc, char* argv[])
     gpu_thread = atoi(argv[2]);
 #ifdef THREAD
     twin_thp = twin_thpool_init(cpu_thread,gpu_thread);
+    time_check_thp = thpool_init(2);
 #endif
 
     //char** vgg = {"darknet", "classfier", "predict", "cfg/imagenet1k.data", "cfg/","", "data/eagle.jpg"};

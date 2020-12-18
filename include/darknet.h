@@ -26,6 +26,7 @@ extern "C"
 #define SECRET_NUM -1234
     extern int gpu_index;
     extern twin_thpool *twin_thp;
+    extern threadpool time_check_thp;
 #define THREAD_NUM_POOL 8 // no use
 #define n_loop 16 //hojin # of loop classifier2 no use
 #ifdef THREAD
@@ -183,6 +184,7 @@ extern int c;
         void (*forward_thread)(netlayer *);
         //2020 0223 hojin gpu threadbody function add
         void (*forward_gpu_thread)(netlayer *);
+        cudaEvent_t kernelEndEvent;
 #endif
         void (*backward)(struct layer, struct network);
         void (*update)(struct layer, update_args);

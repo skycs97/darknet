@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <assert.h>
+#include <unistd.h>
 #include "network.h"
 #include "image.h"
 #include "data.h"
@@ -195,8 +196,17 @@ network *make_network(int n)
     net->cost = calloc(1, sizeof(float));
     return net;
 }
+
 #ifdef THREAD
 #ifdef GPU
+void gpu_kernel_finish_checker(netlayer *input){
+    while(cudaSuccess == cudaEventQuery(input->layer.kernelEndEvent)){
+        usleep(100);
+    }
+    gpu_total_time -= input->layer.exe_time_gpu;
+    gpu_total_time = (gpu_total_time < 0) ? 0 : gpu_total_time;    
+}
+
 void forward_function(netlayer *input)
 {
    pthread_mutex_lock(&mutex_t[input->net.index_n]);
@@ -208,41 +218,30 @@ void forward_function(netlayer *input)
         if (input->layer.delta_gpu)
         {
 #ifdef STREAM
-	    fill_gpu_stream(input->layer.outputs * input->layer.batch, 0, input->layer.delta_gpu,1,input->net.index_n);
+            fill_gpu_stream(input->layer.outputs * input->layer.batch, 0, input->layer.delta_gpu,1,input->net.index_n);
 #else
             fill_gpu(input->layer.outputs * input->layer.batch, 0, input->layer.delta_gpu, 1);
 #endif
         }
-
         input->layer.forward_gpu_thread(input);
-	
-   // 	cuda_synchronize(input->net.index_n, __LINE__);
-	    gpu_total_time-= input->layer.exe_time_gpu;
-	 gpu_total_time = (gpu_total_time < 0)?0:gpu_total_time;
-        //cuda_pull_array_stream(input->layer.output_gpu, input->layer.output, input->layer.outputs * input->layer.batch, input->net.index_n);
-
+        cudaEventRecord(input->layer.kernelEndEvent, input->net.index_n);
+        thpool_add_work(time_check_thp, gpu_kernel_finish_checker, input, 0);
     }
     else if (input->flag == 0)
     {
 //	   printf("cpu~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`\n");
- //       if(input->layer.flag == 1){
-//		cuda_synchronize(input->net.index_n, __LINE__);
-//	}
         if (input->layer.delta)
         {
             fill_cpu(input->layer.outputs * input->layer.batch, 0, input->layer.delta, 1);
         }
-	
-	cpu_total_time -= input->layer.exe_time;
         input->layer.forward_thread(input);
-	cpu_total_time = (cpu_total_time <0)?0:cpu_total_time;
+        cpu_total_time -= input->layer.exe_time;
+        cpu_total_time = (cpu_total_time <0)?0:cpu_total_time;
     }
-  // cudaThreadSynchronize();
 
-   cond_i[input->net.index_n] = 0;
+    cond_i[input->net.index_n] = 0;
     
     pthread_cond_signal(&cond_t[input->net.index_n]);
-
     pthread_mutex_unlock(&mutex_t[input->net.index_n]);
 }
 #endif
@@ -284,9 +283,6 @@ void forward_network(network *netp)
         {
             pthread_cond_wait(&cond_t[net.index_n], &mutex_t[net.index_n]);
         }
-	
-	//if(lastFlag == 0)
-	       // printf("%d-%d %s - %d\n", net.index_n, i, get_layer_string(l.type), lastFlag);
 	if(lastFlag == 0){
 		c_n++;
 	}
@@ -300,12 +296,11 @@ void forward_network(network *netp)
         pthread_mutex_unlock(&mutex_t[net.index_n]);
     }
     printf("%d cpu: %d gpu: %d\n", net.index_n, c_n, g_n);
-        c += c_n;
-        g += g_n;
+    c += c_n;
+    g += g_n;
     if (lastFlag == 1){
         cuda_synchronize(net.index_n, __LINE__);
         //cudaDeviceSynchronize();
-       //pull_network_output(netp);
     }
 
 #endif
