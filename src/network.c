@@ -224,7 +224,7 @@ void forward_function(netlayer *input)
 #endif
         }
         input->layer.forward_gpu_thread(input);
-        cudaEventRecord(input->layer.kernelEndEvent, input->net.index_n);
+        cudaEventRecord(input->layer.kernelEndEvent, usedstream(input->net.index_n));
         thpool_add_work(time_check_thp, gpu_kernel_finish_checker, input, 0);
     }
     else if (input->flag == 0)
