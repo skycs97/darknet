@@ -200,7 +200,7 @@ network *make_network(int n)
 #ifdef THREAD
 #ifdef GPU
 void gpu_kernel_finish_checker(netlayer *input){
-    while(cudaSuccess == cudaEventQuery(input->layer.kernelEndEvent)){
+    while(cudaSuccess != cudaEventQuery(input->layer.kernelEndEvent)){
         usleep(100);
     }
     gpu_total_time -= input->layer.exe_time_gpu;

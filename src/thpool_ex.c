@@ -98,7 +98,7 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
         {
             arg_p->flag = 1;
             thpool_add_work(gpu, function, (void *)arg_p, gpu_time);
-	        gpu_total_time += arg_p->layer.exe_time_gpu;
+	        gpu_total_time += gpu_time;
         }
         else{
             if(flag == 1){
