@@ -234,9 +234,10 @@ void forward_function(netlayer *input)
         {
             fill_cpu(input->layer.outputs * input->layer.batch, 0, input->layer.delta, 1);
         }
-        input->layer.forward_thread(input);
         cpu_total_time -= input->layer.exe_time;
         cpu_total_time = (cpu_total_time <0)?0:cpu_total_time;
+
+        input->layer.forward_thread(input);
     }
 
     cond_i[input->net.index_n] = 0;

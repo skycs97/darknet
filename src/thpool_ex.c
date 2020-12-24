@@ -79,16 +79,11 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
     //lcs 0816
     double cpu_time, gpu_time;
     int fd;
-    char buffer[10];
     switch (type)
     {
     case 0:
         cpu_time = arg_p->layer.exe_time+ get_thread_min_time(cpu);
 
-        //lcsi 0815
-    //     fd = open("/sys/devices/gpu.0/load", O_RDONLY);
-    //    read(fd, buffer, 4);
-    //
         gpu_time = arg_p->layer.exe_time_gpu;
 
 //      if (gpu_total_time+ arg_p->layer.exe_time_gpu <= cpu->jobqueue.total_time+cpu_time)
