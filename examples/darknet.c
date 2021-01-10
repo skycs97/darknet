@@ -457,6 +457,7 @@ pthread_cond_t *cond_t;
 pthread_mutex_t *mutex_t;
 int *cond_i;
 
+double sync_time_list[30];
 //#define n_net 8 //hojin 8->2
 
 //hojin each networknum
@@ -464,6 +465,7 @@ int n_des;
 int n_res;
 int n_alex;
 int n_vgg;
+int n_total;
 double gpu_total_time = 0;
 double cpu_total_time = 0;
 int cpu_thread;
@@ -514,19 +516,20 @@ int main(int argc, char* argv[])
     network *alexNetwork[n_alex];
 
     int i = 0;
-    int n_all = n_des+n_res+n_vgg+n_alex;
-    cudnn_handle_set_stream(n_all);
+    n_total = n_des+n_res+n_vgg+n_alex;
+    cudnn_handle_set_stream(n_total);
 #ifdef THREAD
     //변수 동적할당
-    cond_t = (pthread_cond_t *)malloc(sizeof(pthread_cond_t) * n_all);
-    mutex_t = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t) * n_all);
-    cond_i = (int *)malloc(sizeof(int) * n_all);
+    cond_t = (pthread_cond_t *)malloc(sizeof(pthread_cond_t) * n_total);
+    mutex_t = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t) * n_total);
+    cond_i = (int *)malloc(sizeof(int) * n_total);
 
-    for (i = 0; i < n_all; i++)
+    for (i = 0; i < n_total; i++)
     {
         pthread_cond_init(&cond_t[i], NULL);
         pthread_mutex_init(&mutex_t[i], NULL);
         cond_i[i] = 0;
+        sync_time_list[i] = 0;
     }
 #endif
 #if 0

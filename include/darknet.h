@@ -36,6 +36,8 @@ extern "C"
 #endif
 extern double gpu_total_time;
 extern double cpu_total_time;
+extern double sync_time_list[];
+extern int n_total;
 extern int g;
 extern int c;
     /*��Ÿ������*/

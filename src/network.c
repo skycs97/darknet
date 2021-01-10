@@ -201,10 +201,10 @@ network *make_network(int n)
 #ifdef GPU
 void gpu_kernel_finish_checker(netlayer *input){
     while(cudaSuccess != cudaEventQuery(input->layer.kernelEndEvent)){
-        usleep(100);
+        usleep(1);
     }
     gpu_total_time -= input->layer.exe_time_gpu;
-    gpu_total_time = (gpu_total_time < 0) ? 0 : gpu_total_time;    
+    gpu_total_time = (gpu_total_time < 0) ? 0 : gpu_total_time;
 }
 
 void forward_function(netlayer *input)
@@ -234,8 +234,6 @@ void forward_function(netlayer *input)
         {
             fill_cpu(input->layer.outputs * input->layer.batch, 0, input->layer.delta, 1);
         }
-        cpu_total_time -= input->layer.exe_time;
-        cpu_total_time = (cpu_total_time <0)?0:cpu_total_time;
 
         input->layer.forward_thread(input);
     }
