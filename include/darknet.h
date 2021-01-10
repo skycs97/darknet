@@ -931,6 +931,7 @@ extern int c;
         network net;
         layer layer;
         int flag;
+        int swap_flag;
     } netlayer;
 
 #ifdef __cplusplus

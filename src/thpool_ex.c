@@ -76,6 +76,7 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
 {
     threadpool cpu = twin_thpool_p->thpool_cpu;
     threadpool gpu = twin_thpool_p->thpool_gpu;
+    arg_p->swap_flag = 0;
     //lcs 0816
     double cpu_time, gpu_time;
     int fd;
@@ -87,7 +88,7 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
         gpu_time = arg_p->layer.exe_time_gpu;
         int i;
 //      if (gpu_total_time+ arg_p->layer.exe_time_gpu <= cpu->jobqueue.total_time+cpu_time)
-	    if (gpu_total_time+ gpu_time <= (gpu_total_time - sync_time_list[arg_p->net.index_n]) + cpu->jobqueue.total_time + cpu_time)
+	    if (gpu_total_time*0.9+ gpu_time <= (gpu_total_time - sync_time_list[arg_p->net.index_n]) + cpu->jobqueue.total_time + cpu_time)
 //	if (arg_p->net.index_n >= 16)
 	    //if(arg_p->layer.type == CONVOLUTIONAL) 
         {
@@ -105,7 +106,7 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
         }
         else{
             if(flag == 1){
-                cuda_synchronize(arg_p->net.index_n, __LINE__);
+                arg_p->swap_flag = 1;
             }
             sync_time_list[arg_p->net.index_n] = 0;
 	       	arg_p->flag = 0;

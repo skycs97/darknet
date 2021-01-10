@@ -230,6 +230,9 @@ void forward_function(netlayer *input)
     else if (input->flag == 0)
     {
 //	   printf("cpu~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`\n");
+        if(input->swap_flag == 1){
+                cuda_synchronize(input->net.index_n, __LINE__);
+        }
         if (input->layer.delta)
         {
             fill_cpu(input->layer.outputs * input->layer.batch, 0, input->layer.delta, 1);
