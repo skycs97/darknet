@@ -454,9 +454,11 @@ twin_thpool *twin_thp;
 pthread_cond_t *cond_t;
 pthread_mutex_t *mutex_t;
 int *cond_i;
-#define n_net 4 //hojin 8->2
+ //hojin 8->2
+int n_des, n_res,n_vgg,n_alex, n_all;
+#define n_net 8
 
-int main()
+int main(int argc, char* argv[])
 {
 #ifndef GPU
     gpu_index = -1;
@@ -467,9 +469,17 @@ int main()
         cuda_set_device(gpu_index);
     }
 #endif
+    if(argc < 5){
+        return -1;
+    }
+    n_des = atoi(argv[1]);
+    n_res = atoi(argv[2]);
+    n_vgg = atoi(argv[3]);
+    n_alex = atoi(argv[4]);
+    n_all = n_des+n_res+n_vgg+n_alex;
 
 #ifdef THREAD
-    twin_thp = twin_thpool_init(0, 8);
+    twin_thp = twin_thpool_init(0, 1);
 #endif
 
     //char** vgg = {"darknet", "classfier", "predict", "cfg/imagenet1k.data", "cfg/","", "data/eagle.jpg"};
@@ -480,8 +490,10 @@ int main()
     char *denseName = "Dense";
     char *resName = "Res";
 
-    network *denseNetwork[n_net];
-    network *resNetwork[n_net];
+    network *denseNetwork[n_des];
+    network *resNetwork[n_res];
+    network *vggNetwork[n_vgg];
+    network *alexNetwork[n_alex];
     int i = 0;
 #ifdef THREAD
     //변수 동적할당
@@ -497,14 +509,21 @@ int main()
     }
 #endif
     unsigned k = 0;
-    for (k = 0; k < n_net; k++)
+    for (k = 0; k < n_des; k++)
     {
         denseNetwork[k] = (network *)load_network("cfg/densenet201.cfg", "densenet201.weights", 0);
         denseNetwork[k]->index_n = k;
+    }
+    for(k=0; k<n_res; k++){
         resNetwork[k] = (network *)load_network("cfg/resnet152.cfg", "resnet152.weights", 0);
         resNetwork[k]->index_n = k + n_net;
     }
-
+    for(k=0; k<n_vgg; k++){
+        vggNetwork[k] = (network*)load_network("cfg/vgg-16.cfg", "vgg-16.weights", 0);
+    }
+    for(k=0; k<n_alex; k++){
+        alexNetwork[k] = (network*)load_network("cfg/alexnet.cfg", "alexnet.weights", 0);
+    }
     list *options = read_data_cfg("cfg/imagenet1k.data");
     char *name_list = option_find_str(options, "names", 0);
     if (!name_list)
@@ -515,14 +534,18 @@ int main()
 
     char *buff = "data/eagle.jpg";
     //char *input = buff;
-    test *net_input_des[n_net];
-    test *net_input_res[n_net];
+    test *net_input_des[n_des];
+    test *net_input_res[n_res];
+    test *net_input_vgg[n_vgg];
+    test *net_input_alex[n_alex];
 
     image im = load_image_color(buff, 0, 0);
 
     double time = what_time_is_it_now();
-    pthread_t networkArray_des[n_net];
-    pthread_t networkArray_res[n_net];
+    pthread_t networkArray_des[n_des];
+    pthread_t networkArray_res[n_res];
+    pthread_t networkArray_vgg[n_vgg];
+    pthread_t networkArray_alex[n_alex];
 
     // for(int i=0; i<vggCount; ++i){
     //     test * input = (test*)malloc(sizeof(test));
@@ -536,7 +559,7 @@ int main()
     // }
     //
 
-    for (i = 0; i < n_net; i++)
+    for (i = 0; i < n_des; i++)
     {
         net_input_des[i] = (test *)malloc(sizeof(test));
         net_input_des[i]->net = denseNetwork[i];
@@ -552,7 +575,7 @@ int main()
         }
     }
 
-    for (i = 0; i < n_net; i++)
+    for (i = 0; i < n_res; i++)
     {
         net_input_res[i] = (test *)malloc(sizeof(test));
         net_input_res[i]->net = resNetwork[i];
@@ -567,11 +590,56 @@ int main()
             exit(0);
         }
     }
+    for (i = 0; i < n_vgg; i++)
+    {
+        net_input_vgg[i] = (test *)malloc(sizeof(test));
+        net_input_vgg[i]->net = vggNetwork[i];
+        net_input_vgg[i]->input_path = buff;
+        net_input_vgg[i]->names = names;
+        net_input_vgg[i]->netName = resName;
 
-    for (i = 0; i < n_net; i++)
+        printf(" It's turn for res i = %d\n", i);
+        if (pthread_create(&networkArray_vgg[i], NULL, (void *)predict_classifier2, net_input_vgg[i]) < 0)
+        {
+            perror("thread error");
+            exit(0);
+        }
+    }
+    for (i = 0; i < n_alex; i++)
+    {
+        net_input_alex[i] = (test *)malloc(sizeof(test));
+        net_input_alex[i]->net = alexNetwork[i];
+        net_input_alex[i]->input_path = buff;
+        net_input_alex[i]->names = names;
+        net_input_alex[i]->netName = resName;
+
+        printf(" It's turn for res i = %d\n", i);
+        if (pthread_create(&networkArray_alex[i], NULL, (void *)predict_classifier2, net_input_alex[i]) < 0)
+        {
+            perror("thread error");
+            exit(0);
+        }
+    }
+
+    for (i = 0; i < n_des; i++)
     {
         pthread_join(networkArray_des[i], NULL);
+
+    }
+    for (i = 0; i < n_res; i++)
+    {
         pthread_join(networkArray_res[i], NULL);
+
+    }
+    for (i = 0; i < n_vgg; i++)
+    {
+        pthread_join(networkArray_vgg[i], NULL);
+
+    }
+    for (i = 0; i < n_alex; i++)
+    {
+        pthread_join(networkArray_alex[i], NULL);
+
     }
 #if 0
     //kmsjames 2020 0215

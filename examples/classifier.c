@@ -718,7 +718,7 @@ void *predict_classifier2(test *input)
         free_image(r);
     free_image(im);
    // free_network(net);
-    free(input);
+    //free(input);
     //hojin
     //while(1);
 }

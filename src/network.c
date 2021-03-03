@@ -227,6 +227,8 @@ void forward_function(netlayer *input)
 //2020 0213 cheolsun 네트워크 상태 변수 추가 및 network 쓰레드화
 void forward_network(network *netp)
 {
+    forward_network_gpu(netp);
+    return;
 #ifdef GPU
 #ifdef THREAD
     network net = *netp;
