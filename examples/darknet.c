@@ -460,6 +460,7 @@ int n_des, n_res,n_vgg,n_alex, n_all;
 
 int main(int argc, char* argv[])
 {
+	printf("start");
 #ifndef GPU
     gpu_index = -1;
 #else
@@ -470,6 +471,7 @@ int main(int argc, char* argv[])
     }
 #endif
     if(argc < 5){
+	    printf("cancel");
         return -1;
     }
     n_des = atoi(argv[1]);
@@ -478,10 +480,11 @@ int main(int argc, char* argv[])
     n_alex = atoi(argv[4]);
     n_all = n_des+n_res+n_vgg+n_alex;
 
+    printf("g += g_n;");
 #ifdef THREAD
-    twin_thp = twin_thpool_init(0, 1);
+    twin_thp = twin_thpool_init(0, 8);
 #endif
-
+printf("aaaa");
     //char** vgg = {"darknet", "classfier", "predict", "cfg/imagenet1k.data", "cfg/","", "data/eagle.jpg"};
     //char** densenet = {"darknet", "classfier", "predict", "cfg/imagenet1k.data", "cfg/", "", "data/eagle.jpg"};
     //char** resnet = {"darknet", "classfier", "predict", "cfg/imagenet1k.data", "cfg/", "", "data/eagle.jpg"};
@@ -500,7 +503,7 @@ int main(int argc, char* argv[])
     cond_t = (pthread_cond_t *)malloc(sizeof(pthread_cond_t) * n_net * 2);
     mutex_t = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t) * n_net * 2);
     cond_i = (int *)malloc(sizeof(int) * n_net * 2);
-
+printf("dddd");
     for (i = 0; i < n_net * 2; i++)
     {
         pthread_cond_init(&cond_t[i], NULL);
@@ -516,13 +519,15 @@ int main(int argc, char* argv[])
     }
     for(k=0; k<n_res; k++){
         resNetwork[k] = (network *)load_network("cfg/resnet152.cfg", "resnet152.weights", 0);
-        resNetwork[k]->index_n = k + n_net;
+        resNetwork[k]->index_n = k + n_des;
     }
     for(k=0; k<n_vgg; k++){
         vggNetwork[k] = (network*)load_network("cfg/vgg-16.cfg", "vgg-16.weights", 0);
+	vggNetwork[k]->index_n = k+n_des+n_res;
     }
     for(k=0; k<n_alex; k++){
         alexNetwork[k] = (network*)load_network("cfg/alexnet.cfg", "alexnet.weights", 0);
+	alexNetwork[k]->index_n = k+n_des+n_res+n_vgg;
     }
     list *options = read_data_cfg("cfg/imagenet1k.data");
     char *name_list = option_find_str(options, "names", 0);

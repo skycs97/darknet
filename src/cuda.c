@@ -90,7 +90,6 @@ cublasHandle_t blas_handle_a(int idx)
         cublasCreate(&handle_blas[i]);
         init_blas[i] = 1;
     }
-
     return handle_blas[i];
 }
 
