@@ -457,7 +457,7 @@ pthread_cond_t *cond_t;
 pthread_mutex_t *mutex_t;
 int *cond_i;
 
-double sync_time_list[30];
+double sync_time_list[32];
 //#define n_net 8 //hojin 8->2
 
 //hojin each networknum
@@ -483,8 +483,10 @@ int main(int argc, char* argv[])
     {
         cuda_set_device(gpu_index);
     }
+
     cudaSetDeviceFlags(cudaDeviceMapHost);
     cudaSetDeviceFlags(cudaDeviceScheduleYield);
+    cublasInit();
 #endif
     cpu_thread = atoi(argv[1]);
     gpu_thread = atoi(argv[2]);
@@ -700,8 +702,8 @@ int main(int argc, char* argv[])
     {
         pthread_join(networkArray_alex[i], NULL);
     }
-
-    printf("\n execution Time : %lf\n", what_time_is_it_now() - time_start);
+    double end = what_time_is_it_now();
+    printf("\n execution Time : %lf\n", end - time_start);
 #if 0
     for (i = 0; i < n_net; i++)
     {

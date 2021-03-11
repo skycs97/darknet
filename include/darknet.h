@@ -11,6 +11,7 @@
 
 #include "cuda_runtime.h"
 #include "curand.h"
+//#include "cublas.h"
 #include "cublas_v2.h"
 #include "cuda_profiler_api.h"
 #ifdef CUDNN
