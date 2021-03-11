@@ -963,7 +963,7 @@ float *network_output(network *net)
 void forward_network_gpu(network *netp)
 {
     network net = *netp;
-    cuda_set_device(net.gpu_index);
+    //cuda_set_device(net.gpu_index);
     cuda_push_array(net.input_gpu, net.input, net.inputs * net.batch);
     if (net.truth)
     {

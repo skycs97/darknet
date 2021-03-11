@@ -9,7 +9,7 @@ int gpu_index = 0;
 #include <assert.h>
 #include <stdlib.h>
 #include <time.h>
-#include "cuda_profiler_api.h"
+
 
 static int check = 0;
 

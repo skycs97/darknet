@@ -461,10 +461,6 @@ double sync_time_list[30];
 //#define n_net 8 //hojin 8->2
 
 //hojin each networknum
-int n_des;
-int n_res;
-int n_alex;
-int n_vgg;
 int n_total;
 double gpu_total_time = 0;
 double cpu_total_time = 0;
@@ -505,11 +501,11 @@ int main(int argc, char* argv[])
     char *denseName = "Dense";
     char *resName = "Res";
 
-    n_des = atoi(argv[3]);
-    n_res = atoi(argv[4]);
-    n_vgg = atoi(argv[5]);
-    n_alex = atoi(argv[6]);
-
+    int n_des = atoi(argv[3]);
+    int n_res = atoi(argv[4]);
+    int n_vgg = atoi(argv[5]);
+    int n_alex = atoi(argv[6]);
+    
     network *denseNetwork[n_des];
     network *resNetwork[n_res];
     network *vggNetwork[n_vgg];
@@ -589,7 +585,7 @@ int main(int argc, char* argv[])
 
     image im = load_image_color(buff, 0, 0);
 
-    double time = what_time_is_it_now();
+    double time_start = what_time_is_it_now();
 
     pthread_t networkArray_des[n_des];
     pthread_t networkArray_res[n_res];
@@ -619,7 +615,7 @@ int main(int argc, char* argv[])
     //
 
 //kmsjames 2020 0819 for power mon
-cudaProfilerStart();
+//cudaProfilerStart();
 
     for (i = 0; i < n_des; i++)
     {
@@ -705,6 +701,7 @@ cudaProfilerStart();
         pthread_join(networkArray_alex[i], NULL);
     }
 
+    printf("\n execution Time : %lf\n", what_time_is_it_now() - time_start);
 #if 0
     for (i = 0; i < n_net; i++)
     {
@@ -717,15 +714,16 @@ cudaProfilerStart();
     for(i=0; i<THREAD_NUM_POOL;i++)
 	    pthread_join(thpool->threads[i]->pthread, NULL);
 #endif
-	cudaProfilerStop();
-    fprintf(stderr, "\n execution Time : %lf\n", what_time_is_it_now() - time);
-    printf("all count cpu: %d, gpu: %d\n", c, g);
+	
+    
+   // printf("all count cpu: %d, gpu: %d\n", c, g);
+  //  cudaProfilerStop();
 //kmsjames 2020 0819 for power mon
 
 //    fclose(fp);
-    free(cond_t);
-    free(mutex_t);
-    free(cond_i);
+    //free(cond_t);
+    //free(mutex_t);
+    //free(cond_i);
     return 0;
     /*
     if (0 == strcmp(argv[1], "average")){

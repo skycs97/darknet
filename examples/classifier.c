@@ -702,9 +702,8 @@ void *predict_classifier2(test *input)
 
     image r = letterbox_image(im, net->w, net->h);
     float *X = r.data;
-
     float *predictions = network_predict(net, X);
-
+    
     if (net->hierarchy)
         hierarchy_predictions(predictions, net->outputs, net->hierarchy, 1, 1);
     top_k(predictions, net->outputs, top, indexes);
@@ -726,7 +725,7 @@ void *predict_classifier2(test *input)
   //  fclose(fp);
     free_image(im);
     //free_network(net);
-    free(input);
+    //free(input);
     //hojin
     //while(1);
  
