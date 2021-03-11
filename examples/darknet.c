@@ -482,7 +482,7 @@ int main(int argc, char* argv[])
 
     printf("g += g_n;");
 #ifdef THREAD
-    twin_thp = twin_thpool_init(0, 8);
+    twin_thp = twin_thpool_init(0, 1);
 #endif
 printf("aaaa");
     //char** vgg = {"darknet", "classfier", "predict", "cfg/imagenet1k.data", "cfg/","", "data/eagle.jpg"};
