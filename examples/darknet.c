@@ -469,6 +469,7 @@ int main(int argc, char* argv[])
     {
         cuda_set_device(gpu_index);
     }
+    cublasInit();
 #endif
     if(argc < 5){
 	    printf("cancel");
