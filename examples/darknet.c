@@ -464,6 +464,7 @@ double sync_time_list[32];
 int n_total;
 double gpu_total_time = 0;
 double cpu_total_time = 0;
+double start_time;
 int cpu_thread;
 int gpu_thread;
 int g=0, c=0;
@@ -587,7 +588,7 @@ int main(int argc, char* argv[])
 
     image im = load_image_color(buff, 0, 0);
 
-    double time_start = what_time_is_it_now();
+    start_time = what_time_is_it_now();
 
     pthread_t networkArray_des[n_des];
     pthread_t networkArray_res[n_res];
@@ -703,7 +704,7 @@ int main(int argc, char* argv[])
         pthread_join(networkArray_alex[i], NULL);
     }
     double end = what_time_is_it_now();
-    printf("\n execution Time : %lf\n", end - time_start);
+    printf("\n execution Time : %lf\n", end - start_time);
 #if 0
     for (i = 0; i < n_net; i++)
     {

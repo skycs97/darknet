@@ -661,12 +661,12 @@ void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *fi
         //printf("%d %d\n", r.w, r.h);
 
         float *X = r.data;
-        time = clock();
+       //ime = clock();
         float *predictions = network_predict(net, X);
         if (net->hierarchy)
             hierarchy_predictions(predictions, net->outputs, net->hierarchy, 1, 1);
         top_k(predictions, net->outputs, top, indexes);
-        fprintf(stderr, "%s: Predicted in %f seconds.\n", input, sec(clock() - time));
+        fprintf(stderr, "%s: Predicted in %f seconds.\n", input, what_time_is_it_now() - start_time);
         for (i = 0; i < top; ++i)
         {
             int index = indexes[i];

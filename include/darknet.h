@@ -35,6 +35,7 @@ extern "C"
     extern pthread_mutex_t *mutex_t;
     extern int *cond_i;
 #endif
+extern double start_time;
 extern double gpu_total_time;
 extern double cpu_total_time;
 extern double sync_time_list[];
