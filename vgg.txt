@@ -1,0 +1,32 @@
+2 cpu: 0 gpu: 23
+8 cpu: 0 gpu: 23
+10 cpu: 0 gpu: 23
+9 cpu: 0 gpu: 23
+11 cpu: 0 gpu: 23
+12 cpu: 0 gpu: 23
+13 cpu: 2 gpu: 21
+14 cpu: 3 gpu: 20
+0 cpu: 2 gpu: 21
+6 cpu: 2 gpu: 21
+3 cpu: 3 gpu: 20
+7 cpu: 3 gpu: 20
+network : VGG - 2 : Predicted in 0.786380 seconds.
+network : VGG - 8 : Predicted in 0.768578 seconds.
+network : VGG - 10 : Predicted in 0.771989 seconds.
+network : VGG - 9 : Predicted in 0.763770 seconds.
+network : VGG - 11 : Predicted in 0.763748 seconds.
+network : VGG - 12 : Predicted in 0.766024 seconds.
+network : VGG - 13 : Predicted in 0.847443 seconds.
+network : VGG - 14 : Predicted in 0.914079 seconds.
+network : VGG - 0 : Predicted in 1.034430 seconds.
+1 cpu: 2 gpu: 21
+network : VGG - 6 : Predicted in 1.112635 seconds.
+network : VGG - 3 : Predicted in 1.159244 seconds.
+5 cpu: 2 gpu: 21
+4 cpu: 2 gpu: 21
+network : VGG - 7 : Predicted in 1.249926 seconds.
+network : VGG - 5 : Predicted in 1.400970 seconds.
+network : VGG - 1 : Predicted in 1.417116 seconds.
+network : VGG - 4 : Predicted in 1.492209 seconds.
+
+ execution Time : 1.516708

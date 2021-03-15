@@ -1,0 +1,42 @@
+18 cpu: 1 gpu: 13
+17 cpu: 1 gpu: 22
+network : Alex - 18 : Predicted in 0.309909 seconds.
+19 cpu: 3 gpu: 11
+network : VGG - 17 : Predicted in 0.422636 seconds.
+network : Alex - 19 : Predicted in 0.626162 seconds.
+16 cpu: 3 gpu: 20
+network : VGG - 16 : Predicted in 1.053781 seconds.
+15 cpu: 1 gpu: 204
+12 cpu: 1 gpu: 204
+11 cpu: 1 gpu: 204
+9 cpu: 2 gpu: 203
+14 cpu: 2 gpu: 203
+13 cpu: 2 gpu: 203
+network : Res - 15 : Predicted in 1.477197 seconds.
+network : Res - 12 : Predicted in 1.478038 seconds.
+network : Res - 11 : Predicted in 1.502573 seconds.
+network : Res - 9 : Predicted in 1.517870 seconds.
+10 cpu: 4 gpu: 201
+8 cpu: 3 gpu: 202
+network : Res - 14 : Predicted in 1.518750 seconds.
+network : Res - 13 : Predicted in 1.509387 seconds.
+4 cpu: 2 gpu: 303
+3 cpu: 2 gpu: 303
+2 cpu: 1 gpu: 304
+1 cpu: 1 gpu: 304
+network : Res - 10 : Predicted in 1.602531 seconds.
+network : Res - 8 : Predicted in 1.596930 seconds.
+0 cpu: 3 gpu: 302
+7 cpu: 4 gpu: 301
+6 cpu: 4 gpu: 301
+5 cpu: 4 gpu: 301
+network : Dense - 4 : Predicted in 1.696800 seconds.
+network : Dense - 1 : Predicted in 1.687086 seconds.
+network : Dense - 3 : Predicted in 1.682534 seconds.
+network : Dense - 2 : Predicted in 1.688550 seconds.
+network : Dense - 0 : Predicted in 1.715287 seconds.
+network : Dense - 7 : Predicted in 1.668333 seconds.
+network : Dense - 5 : Predicted in 1.693689 seconds.
+network : Dense - 6 : Predicted in 1.721292 seconds.
+
+ execution Time : 1.753261

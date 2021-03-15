@@ -274,12 +274,13 @@ void forward_network(network *netp)
        //fprintf(timing, "%d,%d,%lf\n", net.index_n, i, what_time_is_it_now());
         net.index = i;
         layer l = net.layers[i];
-        netlayer nl;
+        netlayer *nl = (netlayer*)malloc(sizeof(netlayer));
 
-        nl.layer = l;
-        nl.net = net;
-        nl.flag = 0;
-        lastFlag = add_job(twin_thp, forward_function, &nl, lastFlag);
+        nl->layer = l;
+        nl->net = net;
+        nl->flag = 0;
+	nl->swap_flag = 0;
+        lastFlag = add_job(twin_thp, forward_function, nl, lastFlag);
 
         while (cond_i[net.index_n] == 1)
         {

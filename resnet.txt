@@ -1,0 +1,38 @@
+5 cpu: 1 gpu: 204
+3 cpu: 1 gpu: 204
+10 cpu: 1 gpu: 204
+2 cpu: 1 gpu: 204
+1 cpu: 1 gpu: 204
+0 cpu: 1 gpu: 204
+4 cpu: 1 gpu: 204
+7 cpu: 1 gpu: 204
+8 cpu: 1 gpu: 204
+16 cpu: 1 gpu: 204
+6 cpu: 1 gpu: 204
+14 cpu: 4 gpu: 201
+15 cpu: 4 gpu: 201
+9 cpu: 4 gpu: 201
+17 cpu: 4 gpu: 201
+12 cpu: 4 gpu: 201
+11 cpu: 4 gpu: 201
+13 cpu: 4 gpu: 201
+network : Res - 5 : Predicted in 1.891969 seconds.
+network : Res - 3 : Predicted in 1.893240 seconds.
+network : Res - 2 : Predicted in 1.890094 seconds.
+network : Res - 10 : Predicted in 1.897021 seconds.
+network : Res - 1 : Predicted in 1.898517 seconds.
+network : Res - 0 : Predicted in 1.894520 seconds.
+network : Res - 7 : Predicted in 1.889629 seconds.
+network : Res - 4 : Predicted in 1.909628 seconds.
+network : Res - 8 : Predicted in 1.900033 seconds.
+network : Res - 16 : Predicted in 1.882748 seconds.
+network : Res - 6 : Predicted in 1.896829 seconds.
+network : Res - 14 : Predicted in 2.038464 seconds.
+network : Res - 9 : Predicted in 2.066522 seconds.
+network : Res - 15 : Predicted in 2.076915 seconds.
+network : Res - 17 : Predicted in 2.060527 seconds.
+network : Res - 12 : Predicted in 2.040942 seconds.
+network : Res - 13 : Predicted in 2.061525 seconds.
+network : Res - 11 : Predicted in 2.069595 seconds.
+
+ execution Time : 2.124241

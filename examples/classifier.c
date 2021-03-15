@@ -709,7 +709,7 @@ void *predict_classifier2(test *input)
     top_k(predictions, net->outputs, top, indexes);
     
     time2 = what_time_is_it_now();
-    fprintf(stderr, "network : %s - %d : Predicted in %lf seconds.\n", input->netName, net->index_n, time2 - time);
+    printf("network : %s - %d : Predicted in %lf seconds.\n", input->netName, net->index_n, time2 - time);
     char fileName[20];
 
     

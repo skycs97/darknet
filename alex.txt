@@ -1,0 +1,66 @@
+2 cpu: 2 gpu: 12
+12 cpu: 2 gpu: 12
+9 cpu: 2 gpu: 12
+7 cpu: 2 gpu: 12
+23 cpu: 2 gpu: 12
+4 cpu: 2 gpu: 12
+10 cpu: 0 gpu: 14
+19 cpu: 1 gpu: 13
+25 cpu: 1 gpu: 13
+18 cpu: 1 gpu: 13
+21 cpu: 1 gpu: 13
+27 cpu: 3 gpu: 11
+22 cpu: 2 gpu: 12
+24 cpu: 2 gpu: 12
+15 cpu: 2 gpu: 12
+16 cpu: 2 gpu: 12
+29 cpu: 2 gpu: 12
+26 cpu: 2 gpu: 12
+0 cpu: 3 gpu: 11
+3 cpu: 2 gpu: 12
+30 cpu: 4 gpu: 10
+14 cpu: 2 gpu: 12
+network : Alex - 2 : Predicted in 0.382799 seconds.
+network : Alex - 4 : Predicted in 0.339569 seconds.
+network : Alex - 12 : Predicted in 0.366443 seconds.
+network : Alex - 9 : Predicted in 0.376046 seconds.
+network : Alex - 7 : Predicted in 0.348410 seconds.
+network : Alex - 23 : Predicted in 0.357392 seconds.
+network : Alex - 25 : Predicted in 0.310445 seconds.
+network : Alex - 10 : Predicted in 0.371570 seconds.
+network : Alex - 21 : Predicted in 0.294739 seconds.
+network : Alex - 19 : Predicted in 0.304875 seconds.
+network : Alex - 18 : Predicted in 0.316504 seconds.
+network : Alex - 27 : Predicted in 0.295839 seconds.
+network : Alex - 22 : Predicted in 0.340474 seconds.
+network : Alex - 24 : Predicted in 0.339562 seconds.
+network : Alex - 15 : Predicted in 0.359128 seconds.
+13 cpu: 3 gpu: 11
+network : Alex - 16 : Predicted in 0.348126 seconds.
+network : Alex - 26 : Predicted in 0.379881 seconds.
+network : Alex - 29 : Predicted in 0.370407 seconds.
+17 cpu: 3 gpu: 11
+28 cpu: 4 gpu: 10
+network : Alex - 3 : Predicted in 0.483967 seconds.
+network : Alex - 0 : Predicted in 0.456618 seconds.
+network : Alex - 30 : Predicted in 0.364714 seconds.
+network : Alex - 14 : Predicted in 0.485490 seconds.
+1 cpu: 5 gpu: 9
+20 cpu: 3 gpu: 11
+network : Alex - 13 : Predicted in 0.437089 seconds.
+8 cpu: 5 gpu: 9
+6 cpu: 3 gpu: 11
+network : Alex - 17 : Predicted in 0.412594 seconds.
+network : Alex - 28 : Predicted in 0.389661 seconds.
+network : Alex - 1 : Predicted in 0.465399 seconds.
+31 cpu: 3 gpu: 11
+network : Alex - 20 : Predicted in 0.452896 seconds.
+network : Alex - 8 : Predicted in 0.490906 seconds.
+5 cpu: 3 gpu: 11
+network : Alex - 6 : Predicted in 0.433428 seconds.
+network : Alex - 31 : Predicted in 0.456372 seconds.
+network : Alex - 5 : Predicted in 0.475055 seconds.
+11 cpu: 4 gpu: 10
+network : Alex - 11 : Predicted in 0.505544 seconds.
+
+ execution Time : 0.621115
