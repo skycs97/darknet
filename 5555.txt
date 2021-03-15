@@ -1,0 +1,40 @@
+startg += g_n;aaaa It's turn for des i = 0
+ It's turn for des i = 1
+ It's turn for des i = 2
+ It's turn for des i = 3
+ It's turn for des i = 4
+ It's turn for res i = 0
+ It's turn for res i = 1
+ It's turn for res i = 2
+ It's turn for res i = 3
+ It's turn for res i = 4
+ It's turn for res i = 0
+ It's turn for res i = 1
+ It's turn for res i = 2
+ It's turn for res i = 3
+ It's turn for res i = 4
+ It's turn for res i = 0
+ It's turn for res i = 1
+ It's turn for res i = 2
+ It's turn for res i = 3
+ It's turn for res i = 4
+network : alex - 16 : Predicted in 0.239281 seconds.
+network : alex - 18 : Predicted in 0.220278 seconds.
+network : alex - 15 : Predicted in 0.223632 seconds.
+network : alex - 19 : Predicted in 0.219387 seconds.
+network : alex - 17 : Predicted in 0.223445 seconds.
+network : vgg - 14 : Predicted in 1.101234 seconds.
+network : vgg - 12 : Predicted in 1.080838 seconds.
+network : vgg - 13 : Predicted in 1.104595 seconds.
+network : vgg - 10 : Predicted in 1.100588 seconds.
+network : vgg - 11 : Predicted in 1.078880 seconds.
+network : Res - 5 : Predicted in 1.743859 seconds.
+network : Res - 9 : Predicted in 1.759847 seconds.
+network : Res - 7 : Predicted in 1.742918 seconds.
+network : Res - 8 : Predicted in 1.751166 seconds.
+network : Res - 6 : Predicted in 1.739719 seconds.
+network : Dense - 4 : Predicted in 1.863725 seconds.
+network : Dense - 2 : Predicted in 1.870184 seconds.
+network : Dense - 3 : Predicted in 1.873969 seconds.
+network : Dense - 1 : Predicted in 1.853747 seconds.
+network : Dense - 0 : Predicted in 1.826159 seconds.

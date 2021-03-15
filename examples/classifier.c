@@ -661,12 +661,12 @@ void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *fi
         //printf("%d %d\n", r.w, r.h);
 
         float *X = r.data;
-        time = clock();
         float *predictions = network_predict(net, X);
         if (net->hierarchy)
             hierarchy_predictions(predictions, net->outputs, net->hierarchy, 1, 1);
         top_k(predictions, net->outputs, top, indexes);
-        fprintf(stderr, "%s: Predicted in %f seconds.\n", input, sec(clock() - time));
+        time = what_time_is_it_now();
+        fprintf(stderr, "%s: Predicted in %f seconds.\n", input, time-start_time);
         for (i = 0; i < top; ++i)
         {
             int index = indexes[i];
@@ -707,12 +707,12 @@ void *predict_classifier2(test *input)
     if (net->hierarchy)
         hierarchy_predictions(predictions, net->outputs, net->hierarchy, 1, 1);
     top_k(predictions, net->outputs, top, indexes);
-    fprintf(stderr, "network : %s - %d : Predicted in %lf seconds.\n", input->netName, net->index_n, what_time_is_it_now() - time);
+    printf("network : %s - %d : Predicted in %lf seconds.\n", input->netName, net->index_n, what_time_is_it_now() - time);
     for (i = 0; i < top; ++i)
     {
         int index = indexes[i];
 
-        printf("%5.2f%%: %s\n", predictions[index] * 100, names[index]);
+        //printf("%5.2f%%: %s\n", predictions[index] * 100, names[index]);
     }
     if (r.data != im.data)
         free_image(r);

@@ -457,6 +457,7 @@ int *cond_i;
  //hojin 8->2
 int n_des, n_res,n_vgg,n_alex, n_all;
 #define n_net 8
+double start_time;
 
 int main(int argc, char* argv[])
 {
@@ -493,7 +494,7 @@ printf("aaaa");
     char *vggName = "VGG";
     char *denseName = "Dense";
     char *resName = "Res";
-
+    char *alexName = "Alex";
     network *denseNetwork[n_des];
     network *resNetwork[n_res];
     network *vggNetwork[n_vgg];
@@ -547,7 +548,7 @@ printf("dddd");
 
     image im = load_image_color(buff, 0, 0);
 
-    double time = what_time_is_it_now();
+    start_time = what_time_is_it_now();
     pthread_t networkArray_des[n_des];
     pthread_t networkArray_res[n_res];
     pthread_t networkArray_vgg[n_vgg];
@@ -602,7 +603,7 @@ printf("dddd");
         net_input_vgg[i]->net = vggNetwork[i];
         net_input_vgg[i]->input_path = buff;
         net_input_vgg[i]->names = names;
-        net_input_vgg[i]->netName = resName;
+        net_input_vgg[i]->netName = vggName;
 
         printf(" It's turn for res i = %d\n", i);
         if (pthread_create(&networkArray_vgg[i], NULL, (void *)predict_classifier2, net_input_vgg[i]) < 0)
@@ -617,7 +618,7 @@ printf("dddd");
         net_input_alex[i]->net = alexNetwork[i];
         net_input_alex[i]->input_path = buff;
         net_input_alex[i]->names = names;
-        net_input_alex[i]->netName = resName;
+        net_input_alex[i]->netName = alexName;
 
         printf(" It's turn for res i = %d\n", i);
         if (pthread_create(&networkArray_alex[i], NULL, (void *)predict_classifier2, net_input_alex[i]) < 0)
@@ -653,7 +654,7 @@ printf("dddd");
 	    pthread_join(thpool->threads[i]->pthread, NULL);
 #endif
 
-    fprintf(stderr, "\n execution Time : %lf\n", what_time_is_it_now() - time);
+    fprintf(stderr, "\n execution Time : %lf\n", what_time_is_it_now() - start_time);
 
     free(cond_t);
     free(mutex_t);
