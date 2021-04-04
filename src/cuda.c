@@ -15,6 +15,10 @@ void cuda_set_device(int n)
     gpu_index = n;
     cudaError_t status = cudaSetDevice(n);
     check_error(status);
+    int i = 0;
+    for(i=0; i<32; ++i){
+	    blas_handle_a(i);
+    }
 }
 
 int cuda_get_device()

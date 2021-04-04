@@ -670,9 +670,9 @@ void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *fi
         for (i = 0; i < top; ++i)
         {
             int index = indexes[i];
-            //if(net->hierarchy) printf("%d, %s: %f, parent: %s \n",index, names[index], predictions[index], (net->hierarchy->parent[index] >= 0) ? names[net->hierarchy->parent[index]] : "Root");
-            //else printf("%s: %f\n",names[index], predictions[index]);
-            printf("%5.2f%%: %s\n", predictions[index] * 100, names[index]);
+            if(net->hierarchy) fprintf(stderr,"%d, %s: %f, parent: %s \n",index, names[index], predictions[index], (net->hierarchy->parent[index] >= 0) ? names[net->hierarchy->parent[index]] : "Root");
+            else fprintf(stderr,"%s: %f\n",names[index], predictions[index]);
+            fprintf(stderr,"%5.2f%%: %s\n", predictions[index] * 100, names[index]);
         }
         if (r.data != im.data)
             free_image(r);
@@ -698,7 +698,7 @@ void *predict_classifier2(test *input)
     char **names = input->names;
     double time = what_time_is_it_now();
     int *indexes = calloc(top, sizeof(int));
-
+    
     image r = letterbox_image(im, net->w, net->h);
     float *X = r.data;
 
@@ -707,12 +707,12 @@ void *predict_classifier2(test *input)
     if (net->hierarchy)
         hierarchy_predictions(predictions, net->outputs, net->hierarchy, 1, 1);
     top_k(predictions, net->outputs, top, indexes);
-    printf("network : %s - %d : Predicted in %lf seconds.\n", input->netName, net->index_n, what_time_is_it_now() - time);
+    printf("network : %s - %d : Predicted in %lf seconds.\n", input->netName, net->index_n, end_times[net->index_n] - time);
     for (i = 0; i < top; ++i)
     {
         int index = indexes[i];
 
-        //printf("%5.2f%%: %s\n", predictions[index] * 100, names[index]);
+        printf("%5.2f%%: %s\n", predictions[index] * 100, names[index]);
     }
     if (r.data != im.data)
         free_image(r);

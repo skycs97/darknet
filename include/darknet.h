@@ -22,7 +22,7 @@
 extern "C"
 {
 #endif
-
+extern double end_times[];
 #define SECRET_NUM -1234
     extern int gpu_index;
     extern twin_thpool *twin_thp;
@@ -395,6 +395,7 @@ extern "C"
         size_t workspace_size;
         double exe_time;
 #ifdef GPU
+        
         double exe_time_gpu;
         int *indexes_gpu;
 
@@ -560,6 +561,8 @@ extern "C"
         size_t workspace_size;
 
 #ifdef GPU
+        double *end_time;
+        cudaEvent_t event;
         float *input_gpu;
         float *truth_gpu;
         float *delta_gpu;
@@ -914,6 +917,7 @@ extern "C"
     {
         network net;
         layer layer;
+       
         int flag;
     } netlayer;
 

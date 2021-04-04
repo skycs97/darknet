@@ -265,9 +265,12 @@ void forward_network(network *netp)
         net.input = l.output;
         net.input_gpu = l.output_gpu;
         net.inputs = l.outputs;
-
         pthread_mutex_unlock(&mutex_t[net.index_n]);
     }
+    cudaEventCreate(&netp->event);
+    cudaEventRecord(netp->event, 0);
+    cudaEventSynchronize(netp->event);
+    end_times[net.index_n] = what_time_is_it_now();
     if (lastFlag == 1)
         pull_network_output(netp);
 
@@ -946,7 +949,10 @@ void forward_network_gpu(network *netp)
         {
             fill_gpu(l.outputs * l.batch, 0, l.delta_gpu, 1);
         }
+    //    printf("start,%d,%d,%lf\n",net.index_n, i, what_time_is_it_now());
         l.forward_gpu(l, net);
+      //  printf("end,%d,%d,%lf\n", net.index_n, i, what_time_is_it_now());
+
         net.input_gpu = l.output_gpu;
         net.input = l.output;
         if (l.truth)
@@ -955,6 +961,11 @@ void forward_network_gpu(network *netp)
             net.truth = l.output;
         }
     }
+    
+    cudaEventCreate(&netp->event);
+    cudaEventRecord(netp->event, 0);
+    cudaEventSynchronize(netp->event);
+    end_times[net.index_n] = what_time_is_it_now();
     pull_network_output(netp);
     //calc_network_cost(netp);
 }

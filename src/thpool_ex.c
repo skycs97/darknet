@@ -59,7 +59,8 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
 
     double cpu_time = cpu->jobqueue.total_time;
     double gpu_time = gpu->jobqueue.total_time;
-
+    thpool_add_work(gpu, function, (void*)arg_p, arg_p->layer.exe_time);
+    return 1;
     //int reflag = 0;
     int a = 0;
     if (gpu->jobqueue.total_time <= cpu->jobqueue.total_time)

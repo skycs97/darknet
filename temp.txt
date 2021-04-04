@@ -13,52 +13,18 @@ startg += g_n;aaaa It's turn for res i = 0
  It's turn for res i = 12
  It's turn for res i = 13
  It's turn for res i = 14
- It's turn for res i = 15
- It's turn for res i = 16
- It's turn for res i = 17
- It's turn for res i = 18
- It's turn for res i = 19
- It's turn for res i = 20
- It's turn for res i = 21
- It's turn for res i = 22
- It's turn for res i = 23
- It's turn for res i = 24
- It's turn for res i = 25
- It's turn for res i = 26
- It's turn for res i = 27
- It's turn for res i = 28
- It's turn for res i = 29
- It's turn for res i = 30
- It's turn for res i = 31
-network : Alex - 0 : Predicted in 0.043275 seconds.
-network : Alex - 6 : Predicted in 0.464943 seconds.
-network : Alex - 14 : Predicted in 0.490163 seconds.
-network : Alex - 15 : Predicted in 0.484287 seconds.
-network : Alex - 8 : Predicted in 0.485897 seconds.
-network : Alex - 13 : Predicted in 0.492809 seconds.
-network : Alex - 5 : Predicted in 0.498320 seconds.
-network : Alex - 4 : Predicted in 0.493082 seconds.
-network : Alex - 21 : Predicted in 0.491045 seconds.
-network : Alex - 1 : Predicted in 0.498516 seconds.
-network : Alex - 10 : Predicted in 0.506531 seconds.
-network : Alex - 11 : Predicted in 0.498471 seconds.
-network : Alex - 26 : Predicted in 0.485762 seconds.
-network : Alex - 22 : Predicted in 0.488997 seconds.
-network : Alex - 17 : Predicted in 0.498294 seconds.
-network : Alex - 25 : Predicted in 0.480077 seconds.
-network : Alex - 3 : Predicted in 0.481922 seconds.
-network : Alex - 16 : Predicted in 0.489275 seconds.
-network : Alex - 18 : Predicted in 0.483849 seconds.
-network : Alex - 7 : Predicted in 0.500717 seconds.
-network : Alex - 27 : Predicted in 0.490624 seconds.
-network : Alex - 23 : Predicted in 0.477868 seconds.
-network : Alex - 29 : Predicted in 0.487352 seconds.
-network : Alex - 20 : Predicted in 0.479165 seconds.
-network : Alex - 24 : Predicted in 0.476418 seconds.
-network : Alex - 31 : Predicted in 0.478291 seconds.
-network : Alex - 19 : Predicted in 0.487963 seconds.
-network : Alex - 9 : Predicted in 0.480546 seconds.
-network : Alex - 28 : Predicted in 0.476427 seconds.
-network : Alex - 12 : Predicted in 0.483165 seconds.
-network : Alex - 2 : Predicted in 0.472074 seconds.
-network : Alex - 30 : Predicted in 0.473150 seconds.
+network : Alex - 0 : Predicted in 0.023365 seconds.
+network : Alex - 2 : Predicted in 0.230218 seconds.
+network : Alex - 7 : Predicted in 0.218758 seconds.
+network : Alex - 6 : Predicted in 0.220756 seconds.
+network : Alex - 5 : Predicted in 0.225859 seconds.
+network : Alex - 1 : Predicted in 0.224740 seconds.
+network : Alex - 3 : Predicted in 0.218952 seconds.
+network : Alex - 8 : Predicted in 0.217565 seconds.
+network : Alex - 4 : Predicted in 0.216868 seconds.
+network : Alex - 9 : Predicted in 0.214338 seconds.
+network : Alex - 12 : Predicted in 0.212850 seconds.
+network : Alex - 14 : Predicted in 0.211653 seconds.
+network : Alex - 11 : Predicted in 0.212536 seconds.
+network : Alex - 13 : Predicted in 0.209745 seconds.
+network : Alex - 10 : Predicted in 0.210970 seconds.

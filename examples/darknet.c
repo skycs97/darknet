@@ -459,7 +459,8 @@ int n_des, n_res,n_vgg,n_alex, n_all;
 #define n_net 8
 double start_time;
 
-int main(int argc, char* argv[])
+double end_times[20];
+int main(int argc, char** argv)
 {
 	printf("start");
 #ifndef GPU
@@ -481,12 +482,10 @@ int main(int argc, char* argv[])
     n_vgg = atoi(argv[3]);
     n_alex = atoi(argv[4]);
     n_all = n_des+n_res+n_vgg+n_alex;
-
-    printf("g += g_n;");
+    
 #ifdef THREAD
     twin_thp = twin_thpool_init(0, 1);
 #endif
-printf("aaaa");
     //char** vgg = {"darknet", "classfier", "predict", "cfg/imagenet1k.data", "cfg/","", "data/eagle.jpg"};
     //char** densenet = {"darknet", "classfier", "predict", "cfg/imagenet1k.data", "cfg/", "", "data/eagle.jpg"};
     //char** resnet = {"darknet", "classfier", "predict", "cfg/imagenet1k.data", "cfg/", "", "data/eagle.jpg"};
@@ -502,10 +501,10 @@ printf("aaaa");
     int i = 0;
 #ifdef THREAD
     //변수 동적할당
-    cond_t = (pthread_cond_t *)malloc(sizeof(pthread_cond_t) * n_net * 2);
-    mutex_t = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t) * n_net * 2);
-    cond_i = (int *)malloc(sizeof(int) * n_net * 2);
-printf("dddd");
+    cond_t = (pthread_cond_t *)malloc(sizeof(pthread_cond_t) * n_all * 2);
+    mutex_t = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t) * n_all * 2);
+    cond_i = (int *)malloc(sizeof(int) * n_all * 2);
+
     for (i = 0; i < n_net * 2; i++)
     {
         pthread_cond_init(&cond_t[i], NULL);
@@ -518,6 +517,7 @@ printf("dddd");
     {
         denseNetwork[k] = (network *)load_network("cfg/densenet201.cfg", "densenet201.weights", 0);
         denseNetwork[k]->index_n = k;
+	//cublasInit();
     }
     for(k=0; k<n_res; k++){
         resNetwork[k] = (network *)load_network("cfg/resnet152.cfg", "resnet152.weights", 0);
@@ -574,7 +574,7 @@ printf("dddd");
         net_input_des[i]->names = names;
         net_input_des[i]->netName = denseName;
 
-        printf(" It's turn for des i = %d\n", i);
+        fprintf(stderr," It's turn for des i = %d\n", i);
         if (pthread_create(&networkArray_des[i], NULL, (void *)predict_classifier2, net_input_des[i]) < 0)
         {
             perror("thread error");
@@ -590,7 +590,7 @@ printf("dddd");
         net_input_res[i]->names = names;
         net_input_res[i]->netName = resName;
 
-        printf(" It's turn for res i = %d\n", i);
+        fprintf(stderr," It's turn for res i = %d\n", i);
         if (pthread_create(&networkArray_res[i], NULL, (void *)predict_classifier2, net_input_res[i]) < 0)
         {
             perror("thread error");
@@ -605,7 +605,7 @@ printf("dddd");
         net_input_vgg[i]->names = names;
         net_input_vgg[i]->netName = vggName;
 
-        printf(" It's turn for res i = %d\n", i);
+        fprintf(stderr," It's turn for res i = %d\n", i);
         if (pthread_create(&networkArray_vgg[i], NULL, (void *)predict_classifier2, net_input_vgg[i]) < 0)
         {
             perror("thread error");
@@ -620,7 +620,7 @@ printf("dddd");
         net_input_alex[i]->names = names;
         net_input_alex[i]->netName = alexName;
 
-        printf(" It's turn for res i = %d\n", i);
+        fprintf(stderr," It's turn for res i = %d\n", i);
         if (pthread_create(&networkArray_alex[i], NULL, (void *)predict_classifier2, net_input_alex[i]) < 0)
         {
             perror("thread error");

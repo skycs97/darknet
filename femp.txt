@@ -1,0 +1,30 @@
+startg += g_n;aaaa It's turn for res i = 0
+ It's turn for res i = 1
+ It's turn for res i = 2
+ It's turn for res i = 3
+ It's turn for res i = 4
+ It's turn for res i = 5
+ It's turn for res i = 6
+ It's turn for res i = 7
+ It's turn for res i = 8
+ It's turn for res i = 9
+ It's turn for res i = 10
+ It's turn for res i = 11
+ It's turn for res i = 12
+ It's turn for res i = 13
+ It's turn for res i = 14
+network : Res - 1 : Predicted in 1.264210 seconds.
+network : Res - 3 : Predicted in 1.889163 seconds.
+network : Res - 9 : Predicted in 1.906055 seconds.
+network : Res - 7 : Predicted in 1.900023 seconds.
+network : Res - 2 : Predicted in 1.897353 seconds.
+network : Res - 5 : Predicted in 1.893217 seconds.
+network : Res - 8 : Predicted in 1.900744 seconds.
+network : Res - 6 : Predicted in 1.892820 seconds.
+network : Res - 10 : Predicted in 1.899988 seconds.
+network : Res - 11 : Predicted in 1.888591 seconds.
+network : Res - 4 : Predicted in 1.894219 seconds.
+network : Res - 0 : Predicted in 1.889025 seconds.
+network : Res - 14 : Predicted in 1.881576 seconds.
+network : Res - 13 : Predicted in 1.882226 seconds.
+network : Res - 12 : Predicted in 1.882781 seconds.
