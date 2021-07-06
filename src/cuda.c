@@ -93,6 +93,7 @@ void cudnn_handle_set_stream(int num)
 
         
         init_stream[i] = 1;
+        blas_handle_a(i);
     }
 }
 

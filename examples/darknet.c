@@ -464,9 +464,11 @@ double sync_time_list[32];
 int n_total;
 double gpu_total_time = 0;
 double cpu_total_time = 0;
+double start_time_a;
 int cpu_thread;
 int gpu_thread;
 int g=0, c=0;
+int start_flag;
 
 int main(int argc, char* argv[])
 {
@@ -485,7 +487,7 @@ int main(int argc, char* argv[])
     }
 
     cudaSetDeviceFlags(cudaDeviceMapHost);
-    cudaSetDeviceFlags(cudaDeviceScheduleYield);
+    cudaSetDeviceFlags(cudaDeviceScheduleSpin);
     cublasInit();
 #endif
     cpu_thread = atoi(argv[1]);
@@ -521,7 +523,7 @@ int main(int argc, char* argv[])
     cond_t = (pthread_cond_t *)malloc(sizeof(pthread_cond_t) * n_total);
     mutex_t = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t) * n_total);
     cond_i = (int *)malloc(sizeof(int) * n_total);
-
+start_flag = 0;
     for (i = 0; i < n_total; i++)
     {
         pthread_cond_init(&cond_t[i], NULL);
@@ -543,23 +545,23 @@ int main(int argc, char* argv[])
     int k;
      for (k = 0; k < n_des; k++)
     {
-        denseNetwork[k] = (network *)load_network("cfg/densenet201.cfg", "densenet201.weights", 0);
+        denseNetwork[k] = (network *)load_network("cfg/densenet201.cfg", "../densenet201.weights", 0);
         denseNetwork[k]->index_n = k;
     }
 
     for (k = 0; k < n_res; k++)
     {
-        resNetwork[k] = (network *)load_network("cfg/resnet152.cfg", "resnet152.weights", 0);
+        resNetwork[k] = (network *)load_network("cfg/resnet152.cfg", "../resnet152.weights", 0);
         resNetwork[k]->index_n = k + n_des;
     }
     for (k = 0; k < n_vgg; k++)
     {
-        vggNetwork[k] = (network *)load_network("cfg/vgg-16.cfg", "vgg-16.weights", 0);
+        vggNetwork[k] = (network *)load_network("cfg/vgg-16.cfg", "../vgg-16.weights", 0);
         vggNetwork[k]->index_n = k + n_des + n_res;
     }
     for (k = 0; k < n_alex; k++)
     {
-        alexNetwork[k] = (network *)load_network("cfg/alexnet.cfg", "alexnet.weights", 0);
+        alexNetwork[k] = (network *)load_network("cfg/alexnet.cfg", "../alexnet.weights", 0);
         alexNetwork[k]->index_n = k + n_des + n_res + n_vgg;
     }
 //while(1){
@@ -587,7 +589,7 @@ int main(int argc, char* argv[])
 
     image im = load_image_color(buff, 0, 0);
 
-    double time_start = what_time_is_it_now();
+   start_time_a = what_time_is_it_now();
 
     pthread_t networkArray_des[n_des];
     pthread_t networkArray_res[n_res];
@@ -685,7 +687,7 @@ int main(int argc, char* argv[])
     
     //fprintf(stderr, "\n execution Time : %lf\n", what_time_is_it_now() - time);
 
-
+    start_flag = 1;
     for (i = 0; i < n_des; i++)
     {
         pthread_join(networkArray_des[i], NULL);
@@ -703,7 +705,8 @@ int main(int argc, char* argv[])
         pthread_join(networkArray_alex[i], NULL);
     }
     double end = what_time_is_it_now();
-    printf("\n execution Time : %lf\n", end - time_start);
+    fprintf(stderr,"\n execution Time : %lf\n", end - start_time_a);
+
 #if 0
     for (i = 0; i < n_net; i++)
     {

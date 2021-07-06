@@ -35,7 +35,7 @@ crop_layer make_crop_layer(int batch, int h, int w, int c, int crop_height, int 
     l.output = calloc(l.outputs*batch, sizeof(float));
     l.forward = forward_crop_layer;
     l.backward = backward_crop_layer;
-    l.exe_time = 0.01;
+    l.exe_time = 1000000;
     #ifdef THREAD
     l.forward_thread = forward_crop_layer_thread;
     #endif
@@ -49,6 +49,8 @@ crop_layer make_crop_layer(int batch, int h, int w, int c, int crop_height, int 
     l.backward_gpu = backward_crop_layer_gpu;
     l.output_gpu = cuda_make_array(l.output, l.outputs*batch);
     l.rand_gpu   = cuda_make_array(0, l.batch*8);
+    //cuda_random(l.rand_gpu, l.batch*8);
+    //l.rand_gpu = cuda_make_array(0, l.batch*8);
     #endif
     return l;
 }

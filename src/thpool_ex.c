@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+pthread_mutex_t add_mutex;
 double get_thread_min_time(threadpool thpool);
 //lcs 0815
 inline double get_gpu_util_time(double gpu_util_weight, int gpuUtil)
@@ -49,7 +50,7 @@ twin_thpool *twin_thpool_init(int thread_num_cpu, int thread_num_gpu)
     int n_gpu = 0;
     int doro = 0;//kmsjames 2020 0817
     cpu_set_t cpuset;
-
+    pthread_mutex_init(&add_mutex, NULL);
     for (n = 0; n < thread_num_cpu + thread_num_gpu; n++)
     {
 	CPU_ZERO(&cpuset);
@@ -57,12 +58,12 @@ twin_thpool *twin_thpool_init(int thread_num_cpu, int thread_num_gpu)
 
         if (n_cpu < thread_num_cpu)
         {
-            pthread_setaffinity_np(twin_thpool_p->thpool_cpu->threads[n_cpu], sizeof(cpu_set_t), &cpuset);
+            pthread_setaffinity_np(twin_thpool_p->thpool_cpu->threads[n_cpu]->pthread, sizeof(cpu_set_t), &cpuset);
             n_cpu++;
         }
         else if (n_gpu < thread_num_gpu)
         {
-            pthread_setaffinity_np(twin_thpool_p->thpool_gpu->threads[n_gpu], sizeof(cpu_set_t), &cpuset);
+            pthread_setaffinity_np(twin_thpool_p->thpool_gpu->threads[n_gpu]->pthread, sizeof(cpu_set_t), &cpuset);
             n_gpu++;
         }
         //kmsjames 2020 0817 for CPU affinity
@@ -71,9 +72,11 @@ twin_thpool *twin_thpool_init(int thread_num_cpu, int thread_num_gpu)
 
     return twin_thpool_p;
 }
-
+extern pthread_mutex_t finish_mutex;
 int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_p, int flag)
 {
+    
+    pthread_mutex_lock(&add_mutex);
     threadpool cpu = twin_thpool_p->thpool_cpu;
     threadpool gpu = twin_thpool_p->thpool_gpu;
     arg_p->swap_flag = 0;
@@ -88,14 +91,17 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
         gpu_time = arg_p->layer.exe_time_gpu;
         int i;
 //      if (gpu_total_time+ arg_p->layer.exe_time_gpu <= cpu->jobqueue.total_time+cpu_time)
-	    if (gpu_total_time*0.9+ gpu_time <= (gpu_total_time - sync_time_list[arg_p->net.index_n]) + cpu->jobqueue.total_time + cpu_time)
+	 if ((gpu_total_time+ gpu_time) <= (gpu_total_time - sync_time_list[arg_p->net.index_n]) + (cpu->jobqueue.total_time + cpu_time))
 //	if (arg_p->net.index_n >= 16)
-	    //if(arg_p->layer.type == CONVOLUTIONAL) 
+//	if(arg_p->layer.type == CONVOLUTIONAL) 
         {
             arg_p->flag = 1;
             thpool_add_work(gpu, function, (void *)arg_p, gpu_time);
-	        gpu_total_time += gpu_time;
+	    pthread_mutex_lock(&finish_mutex);
+	    gpu_total_time += gpu_time;
+	    pthread_mutex_unlock(&finish_mutex);
             for(i=0; i<n_total; ++i){
+		//if(1){
                 if(i == arg_p->net.index_n){
                     sync_time_list[i] = 0;
                 }
@@ -112,7 +118,7 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
 	       	arg_p->flag = 0;
             thpool_add_work(cpu, function, (void *)arg_p, arg_p->layer.exe_time);
 	        cpu_total_time += cpu_time;
-	    }        
+	    }
         break;
     case 1:
         arg_p->flag = 1;
@@ -124,6 +130,7 @@ int add_job(twin_thpool *twin_thpool_p, void (*function)(void *), netlayer *arg_
         break;
     }
 
+        pthread_mutex_unlock(&add_mutex);      
     return arg_p->flag;
 }
 double get_thread_min_time(threadpool thpool)

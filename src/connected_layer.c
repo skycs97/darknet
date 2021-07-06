@@ -102,7 +102,7 @@ layer make_connected_layer(int batch, int inputs, int outputs, ACTIVATION activa
     l.weights_gpu = cuda_make_array(l.weights, outputs * inputs);
     l.biases_gpu = cuda_make_array(l.biases, outputs);
 
-    l.weight_updates_gpu = cuda_make_array(l.weight_updates, outputs * inputs);
+    //l.weight_updates_gpu = cuda_make_array(l.weight_updates, outputs * inputs);
     l.bias_updates_gpu = cuda_make_array(l.bias_updates, outputs);
 
     l.output_gpu = cuda_make_array_2(l.output, outputs * batch);
@@ -289,7 +289,7 @@ void pull_connected_layer(layer l)
 {
     cuda_pull_array(l.weights_gpu, l.weights, l.inputs * l.outputs);
     cuda_pull_array(l.biases_gpu, l.biases, l.outputs);
-    cuda_pull_array(l.weight_updates_gpu, l.weight_updates, l.inputs * l.outputs);
+   // cuda_pull_array(l.weight_updates_gpu, l.weight_updates, l.inputs * l.outputs);
     cuda_pull_array(l.bias_updates_gpu, l.bias_updates, l.outputs);
     if (l.batch_normalize)
     {
@@ -303,7 +303,7 @@ void push_connected_layer(layer l)
 {
     cuda_push_array(l.weights_gpu, l.weights, l.inputs * l.outputs);
     cuda_push_array(l.biases_gpu, l.biases, l.outputs);
-    cuda_push_array(l.weight_updates_gpu, l.weight_updates, l.inputs * l.outputs);
+    //cuda_push_array(l.weight_updates_gpu, l.weight_updates, l.inputs * l.outputs);
     cuda_push_array(l.bias_updates_gpu, l.bias_updates, l.outputs);
     if (l.batch_normalize)
     {
