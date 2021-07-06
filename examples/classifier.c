@@ -666,6 +666,10 @@ void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *fi
         if (net->hierarchy)
             hierarchy_predictions(predictions, net->outputs, net->hierarchy, 1, 1);
         top_k(predictions, net->outputs, top, indexes);
+<<<<<<< HEAD
+=======
+        fprintf(stderr, "%s: Predicted in %f seconds.\n", input, what_time_is_it_now() - start_time);
+>>>>>>> 54c882b95ac93e5f95dd9f9880f6564875134eec
         for (i = 0; i < top; ++i)
         {
             int index = indexes[i];

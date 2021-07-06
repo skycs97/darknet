@@ -464,7 +464,11 @@ double sync_time_list[32];
 int n_total;
 double gpu_total_time = 0;
 double cpu_total_time = 0;
+<<<<<<< HEAD
 double start_time_a;
+=======
+double start_time;
+>>>>>>> 54c882b95ac93e5f95dd9f9880f6564875134eec
 int cpu_thread;
 int gpu_thread;
 int g=0, c=0;
@@ -589,7 +593,11 @@ start_flag = 0;
 
     image im = load_image_color(buff, 0, 0);
 
+<<<<<<< HEAD
    start_time_a = what_time_is_it_now();
+=======
+    start_time = what_time_is_it_now();
+>>>>>>> 54c882b95ac93e5f95dd9f9880f6564875134eec
 
     pthread_t networkArray_des[n_des];
     pthread_t networkArray_res[n_res];
@@ -705,8 +713,12 @@ start_flag = 0;
         pthread_join(networkArray_alex[i], NULL);
     }
     double end = what_time_is_it_now();
+<<<<<<< HEAD
     fprintf(stderr,"\n execution Time : %lf\n", end - start_time_a);
 
+=======
+    printf("\n execution Time : %lf\n", end - start_time);
+>>>>>>> 54c882b95ac93e5f95dd9f9880f6564875134eec
 #if 0
     for (i = 0; i < n_net; i++)
     {
